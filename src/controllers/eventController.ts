@@ -1,5 +1,6 @@
 import { prisma } from '../lib/prisma';
 import { Request, Response } from 'express';
+import { sendWelcomeEmail } from '../../Email';
 
 export const createEventRegistration = async (req: Request, res: Response) => {
   try {
@@ -28,6 +29,9 @@ export const createEventRegistration = async (req: Request, res: Response) => {
         openSourceKnowledge: parseInt(openSourceKnowledge)
       }
     });
+
+    // Send welcome email (fire and forget)
+    sendWelcomeEmail(email, firstName).catch(console.error);
 
     res.status(201).json({
       success: true,

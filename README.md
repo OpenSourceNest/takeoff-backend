@@ -27,6 +27,12 @@ This repository contains the backend API for the Takeoff application, built with
     ```
     DATABASE_URL="postgres://user:password@host:5432/dbname"
     PORT=3000
+    
+    # Email Configuration (Nodemailer)
+    SMTP_HOST="smtp.example.com"
+    SMTP_PORT=587
+    SMTP_USER="your_user"
+    SMTP_PASS="your_password"
     ```
 
 4.  Synchronize the database schema:

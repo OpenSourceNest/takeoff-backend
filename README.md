@@ -154,3 +154,5 @@ The project is configured for deployment on platforms like Render.
 
 -   **Build Command:** `npm install && npm run build`
 -   **Start Command:** `npm start`
+
+Next: email

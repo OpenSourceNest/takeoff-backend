@@ -154,11 +154,18 @@ All event API endpoints are prefixed with `/api/events`.
     }
     ```
 
+## Email Notifications
+
+The system is configured to send automatic welcome emails upon successful registration.
+
+-   **Trigger:** Successful `POST /api/events/register` request.
+-   **Service:** Nodemailer (SMTP).
+-   **Configuration:** Requires valid SMTP credentials in `.env`.
+-   **Behavior:** Fire-and-forget (non-blocking). Errors are logged but do not fail the API request.
+
 ## Deployment (Render)
 
 The project is configured for deployment on platforms like Render.
 
 -   **Build Command:** `npm install && npm run build`
 -   **Start Command:** `npm start`
-
-Next: email

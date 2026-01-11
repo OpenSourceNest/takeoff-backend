@@ -10,6 +10,7 @@ const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
 app.get("/", async (req, res) => {
+  console.log('Root endpoint hit!');
   try {
     const count = await prisma.eventRegistration.count();
     res.json(
@@ -20,6 +21,11 @@ app.get("/", async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: String(error) });
   }
+});
+
+app.get('/test-log', (req, res) => {
+  console.log('TEST LOG ENDPOINT HIT - Console is working!');
+  res.json({ message: 'Console test', timestamp: new Date().toISOString() });
 });
 console.log('PORT:', PORT);
 

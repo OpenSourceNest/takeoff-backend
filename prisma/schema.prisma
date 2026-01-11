@@ -5,11 +5,34 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
 }
+enum Role {
+  DEVELOPER
+  DESIGNER
+  TECHNICAL_WRITER
+  OTHER
+}
+
+model EventRegistration {
+  id                    String   @id @default(cuid())
+  firstName             String
+  lastName              String
+  email                 String   @unique
+  isCommunityMember     Boolean
+  role                  Role
+  roleOther             String?  // if role is OTHER
+  location              String
+  locationOther         String?  // if location is others
+  openSourceKnowledge   Int      @db.SmallInt // 1-10 scale
+  createdAt             DateTime @default(now())
+  
+  @@map("event_registrations")
+}
+
 

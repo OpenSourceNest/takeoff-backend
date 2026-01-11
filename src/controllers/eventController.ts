@@ -1,11 +1,12 @@
-import { prisma } from '../lib/prisma';
-import { Request, Response } from 'express';
-import nodemailer from 'nodemailer';
+import { prisma } from "../lib/prisma";
+import { Request, Response } from "express";
+import nodemailer from "nodemailer";
 
 export const createEventRegistration = async (req: Request, res: Response) => {
-  console.log('=== REGISTRATION ENDPOINT HIT ===');
-  console.log('Request received:', req.method, req.url);
-  
+  // console.log("=== REGISTRATION ENDPOINT HIT ===");
+  // console.log("Request received:", req.method, req.url);
+  // TODO - The above should be moved to middleware
+
   try {
     const {
       firstName,
@@ -16,21 +17,21 @@ export const createEventRegistration = async (req: Request, res: Response) => {
       roleOther,
       location,
       locationOther,
-      openSourceKnowledge
+      openSourceKnowledge,
     } = req.body;
 
     // Basic validation
     if (!firstName?.trim() || !lastName?.trim() || !email?.trim()) {
       return res.status(400).json({
         success: false,
-        error: 'First name, last name, and email are required.'
+        error: "First name, last name, and email are required.",
       });
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({
         success: false,
-        error: 'Invalid email format.'
+        error: "Invalid email format.",
       });
     }
 
@@ -38,7 +39,7 @@ export const createEventRegistration = async (req: Request, res: Response) => {
     if (isNaN(knowledge) || knowledge < 1 || knowledge > 10) {
       return res.status(400).json({
         success: false,
-        error: 'Open source knowledge must be between 1 and 10.'
+        error: "Open source knowledge must be between 1 and 10.",
       });
     }
 
@@ -52,17 +53,17 @@ export const createEventRegistration = async (req: Request, res: Response) => {
         roleOther: roleOther?.trim() || null,
         location: location?.trim(),
         locationOther: locationOther?.trim() || null,
-        openSourceKnowledge: knowledge
-      }
+        openSourceKnowledge: knowledge,
+      },
     });
 
     // Send email after successful registration
-    console.log('About to send email to:', email);
-    console.log('SMTP Config:', {
+    console.log("About to send email to:", email);
+    console.log("SMTP Config:", {
       host: process.env.SMTP_HOST,
       port: process.env.SMTP_PORT,
-      user: process.env.SMTP_USER ? 'SET' : 'NOT SET',
-      pass: process.env.SMTP_PASS ? 'SET' : 'NOT SET'
+      user: process.env.SMTP_USER ? "SET" : "NOT SET",
+      pass: process.env.SMTP_PASS ? "SET" : "NOT SET",
     });
 
     const transporter = nodemailer.createTransport({
@@ -74,14 +75,14 @@ export const createEventRegistration = async (req: Request, res: Response) => {
         pass: process.env.SMTP_PASS,
       },
       tls: {
-        rejectUnauthorized: false
+        rejectUnauthorized: false,
       },
-      connectionTimeout: Number(process.env.SMTP_TIMEOUT) || 60000
+      connectionTimeout: Number(process.env.SMTP_TIMEOUT) || 60000,
     });
 
     try {
       const info = await transporter.sendMail({
-        from: `"Takeoff" <${process.env.SMTP_USER}>`,
+        from: `"Takeoff" <${process.env.SMTP_SENDER}>`,
         to: email,
         subject: "Welcome to Takeoff Event!",
         html: `
@@ -95,26 +96,26 @@ export const createEventRegistration = async (req: Request, res: Response) => {
           </div>
         `,
       });
-      console.log('Email sent successfully! Message ID:', info.messageId);
+      console.log("Email sent successfully! Message ID:", info.messageId);
     } catch (emailError) {
-      console.error('Email sending failed:', emailError);
+      console.error("Email sending failed:", emailError);
     }
 
     res.status(201).json({
       success: true,
-      data: registration
+      data: registration,
     });
   } catch (error: any) {
-    if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
+    if (error.code === "P2002" && error.meta?.target?.includes("email")) {
       return res.status(409).json({
         success: false,
-        error: 'This email address is already registered.'
+        error: "This email address is already registered.",
       });
     }
 
-    res.status(400).json({
+    res.status(500).json({
       success: false,
-      error: error.message || 'An error occurred during registration.'
+      error: error.message || "An error occurred during registration.",
     });
   }
 };
@@ -125,17 +126,17 @@ export const createEventRegistration = async (req: Request, res: Response) => {
 export const getEventRegistrations = async (_req: Request, res: Response) => {
   try {
     const registrations = await prisma.eventRegistration.findMany({
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: "desc" },
     });
 
     res.json({
       success: true,
-      data: registrations
+      data: registrations,
     });
   } catch {
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch registrations.'
+      error: "Failed to fetch registrations.",
     });
   }
 };
@@ -149,29 +150,32 @@ export const updateEventRegistration = async (req: Request, res: Response) => {
     const updateData = { ...req.body };
 
     if (updateData.openSourceKnowledge) {
-      updateData.openSourceKnowledge = parseInt(updateData.openSourceKnowledge, 10);
+      updateData.openSourceKnowledge = parseInt(
+        updateData.openSourceKnowledge,
+        10
+      );
     }
 
     const registration = await prisma.eventRegistration.update({
       where: { id },
-      data: updateData
+      data: updateData,
     });
 
     res.json({
       success: true,
-      data: registration
+      data: registration,
     });
   } catch (error: any) {
-    if (error.code === 'P2025') {
+    if (error.code === "P2025") {
       return res.status(404).json({
         success: false,
-        error: 'Registration not found.'
+        error: "Registration not found.",
       });
     }
 
     res.status(400).json({
       success: false,
-      error: 'Failed to update registration.'
+      error: "Failed to update registration.",
     });
   }
 };
@@ -184,24 +188,24 @@ export const deleteEventRegistration = async (req: Request, res: Response) => {
     const { id } = req.params as { id: string };
 
     await prisma.eventRegistration.delete({
-      where: { id }
+      where: { id },
     });
 
     res.json({
       success: true,
-      message: 'Registration deleted successfully'
+      message: "Registration deleted successfully",
     });
   } catch (error: any) {
-    if (error.code === 'P2025') {
+    if (error.code === "P2025") {
       return res.status(404).json({
         success: false,
-        error: 'Registration not found.'
+        error: "Registration not found.",
       });
     }
 
     res.status(400).json({
       success: false,
-      error: 'Failed to delete registration.'
+      error: "Failed to delete registration.",
     });
   }
 };

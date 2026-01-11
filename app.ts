@@ -1,16 +1,33 @@
-import 'dotenv/config';
-import express from 'express';
-import cors from 'cors';
-import eventRoutes from './src/routes/eventRoutes';
-
-console.log('Starting server...');
-import { prisma } from './src/lib/prisma';
+import "dotenv/config";
+import express from "express";
+import cors from "cors";
+import eventRoutes from "./src/routes/eventRoutes";
+import { prisma } from "./src/lib/prisma";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
+const allowedOrigins =
+  process.env.NODE_ENV === "production"
+    ? ["https://takeoff.opensourcenest.org"]
+    : [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:5173",
+        "http://localhost:8080",
+      ];
 
+app.use(express.json());
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+  })
+);
+
+// TODO - Implement middleware for logging requests
 app.get("/", async (req, res) => {
-  console.log('Root endpoint hit!');
+  console.log("Root endpoint hit!");
   try {
     const count = await prisma.eventRegistration.count();
     res.json(
@@ -23,20 +40,7 @@ app.get("/", async (req, res) => {
   }
 });
 
-app.get('/test-log', (req, res) => {
-  console.log('TEST LOG ENDPOINT HIT - Console is working!');
-  res.json({ message: 'Console test', timestamp: new Date().toISOString() });
-});
-console.log('PORT:', PORT);
-
-app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173', 'http://localhost:8080', '*'],
-  credentials: true
-}));
-app.use(express.json());
-
-app.use('/api/events', eventRoutes);
-console.log('Routes configured');
+app.use("/api/events", eventRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

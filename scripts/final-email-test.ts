@@ -32,7 +32,7 @@ async function testEmail() {
                 lastName: "Okonkwo",
                 email: targetEmail,
                 isCommunityMember: true,
-                role: "DEVELOPER",
+                role: "FULLSTACK_DEVELOPER",
                 location: "Lagos",
                 openSourceKnowledge: "10"
             })

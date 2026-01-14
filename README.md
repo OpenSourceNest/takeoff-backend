@@ -1,171 +1,449 @@
-# Takeoff Backend API
+# Takeoff Event Registration API
 
-This repository contains the backend API for the Takeoff application, built with Express.js and Prisma (PostgreSQL).
+Backend API for the Takeoff event registration system built with Express.js, Prisma, and PostgreSQL.
 
-## Getting Started
+## 🚀 Base URL
+
+- **Development**: `http://localhost:3000`
+- **Production**: `https://takeoff.opensourcenest.org` (TBD)
+
+---
+
+## 📋 API Endpoints
+
+### Event Registration
+
+#### 1. Create Registration
+Register a new participant for the event.
+
+**Endpoint**: `POST /api/events/register`
+
+**Request Body**:
+```json
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "user@example.com",
+  "isCommunityMember": true,
+  "role": "FULLSTACK_DEVELOPER",
+  "roleOther": null,
+  "location": "Lagos, Nigeria",
+  "locationOther": null,
+  "openSourceKnowledge": 8
+}
+```
+
+**Success Response** (201):
+```json
+{
+  "success": true,
+  "data": {
+    "id": "clxyz123...",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "user@example.com",
+    "isCommunityMember": true,
+    "role": "FULLSTACK_DEVELOPER",
+    "roleOther": null,
+    "location": "Lagos, Nigeria",
+    "locationOther": null,
+    "openSourceKnowledge": 8,
+    "createdAt": "2026-01-14T12:00:00.000Z"
+  }
+}
+```
+
+**Error Responses**:
+
+- **400 Bad Request** - Validation error
+```json
+{
+  "success": false,
+  "error": "Invalid email format",
+  "validationErrors": [
+    {
+      "code": "invalid_string",
+      "message": "Invalid email format",
+      "path": ["email"]
+    }
+  ]
+}
+```
+
+- **409 Conflict** - Email already registered
+```json
+{
+  "success": false,
+  "error": "This email address is already registered."
+}
+```
+
+---
+
+#### 2. Get All Registrations
+Retrieve all event registrations.
+
+**Endpoint**: `GET /api/events/registrations`
+
+**Success Response** (200):
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "clxyz123...",
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "user@example.com",
+      "isCommunityMember": true,
+      "role": "FULLSTACK_DEVELOPER",
+      "roleOther": null,
+      "location": "Lagos, Nigeria",
+      "locationOther": null,
+      "openSourceKnowledge": 8,
+      "createdAt": "2026-01-14T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+---
+
+#### 3. Get Single Registration
+Retrieve a specific registration by ID.
+
+**Endpoint**: `GET /api/events/registrations/:id`
+
+**Success Response** (200):
+```json
+{
+  "success": true,
+  "data": {
+    "id": "clxyz123...",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "user@example.com",
+    ...
+  }
+}
+```
+
+**Error Response** (404):
+```json
+{
+  "success": false,
+  "error": "Registration not found."
+}
+```
+
+---
+
+#### 4. Update Registration
+Update an existing registration.
+
+**Endpoint**: `PUT /api/events/registrations/:id`
+
+**Request Body** (all fields optional):
+```json
+{
+  "firstName": "Updated Name",
+  "openSourceKnowledge": 9
+}
+```
+
+**Success Response** (200):
+```json
+{
+  "success": true,
+  "data": {
+    "id": "clxyz123...",
+    "firstName": "Updated Name",
+    ...
+  }
+}
+```
+
+---
+
+##  Available Roles
+
+Total: **30 roles**
+
+### Development (6)
+- `FRONTEND_DEVELOPER`
+- `BACKEND_DEVELOPER`
+- `FULLSTACK_DEVELOPER`
+- `DEVOPS_ENGINEER`
+- `QA_ENGINEER`
+- `SECURITY_ENGINEER`
+
+### Data & AI (2)
+- `DATA_SCIENTIST`
+- `AI_ML_ENGINEER`
+
+### Design & Product (3)
+- `UI_UX_DESIGNER`
+- `PRODUCT_MANAGER`
+- `PROJECT_MANAGER`
+
+### Web3 & Blockchain (10)
+- `SMART_CONTRACT_DEVELOPER`
+- `BLOCKCHAIN_DEVELOPER`
+- `WEB3_DEVELOPER`
+- `SOLIDITY_DEVELOPER`
+- `DAPP_DEVELOPER`
+- `TOKENOMICS_SPECIALIST`
+- `NFT_DEVELOPER`
+- `DEFI_DEVELOPER`
+- `WEB3_SECURITY_AUDITOR`
+- `BLOCKCHAIN_ARCHITECT`
+
+### Content & Community (3)
+- `TECHNICAL_WRITER`
+- `CONTENT_CREATOR`
+- `COMMUNITY_MANAGER`
+
+### Business & Support (3)
+- `FOUNDER`
+- `IT_SUPPORT`
+- `BUSINESS_ANALYST`
+
+### Education (2)
+- `STUDENT`
+- `EDUCATOR`
+
+### Other (1)
+- `OTHER` - Use `roleOther` field to specify
+
+### Complete List (Alphabetical)
+
+```
+AI_ML_ENGINEER
+BACKEND_DEVELOPER
+BLOCKCHAIN_ARCHITECT
+BLOCKCHAIN_DEVELOPER
+BUSINESS_ANALYST
+COMMUNITY_MANAGER
+CONTENT_CREATOR
+DATA_SCIENTIST
+DAPP_DEVELOPER
+DEFI_DEVELOPER
+DEVOPS_ENGINEER
+EDUCATOR
+FOUNDER
+FRONTEND_DEVELOPER
+FULLSTACK_DEVELOPER
+IT_SUPPORT
+NFT_DEVELOPER
+OTHER
+PRODUCT_MANAGER
+PROJECT_MANAGER
+QA_ENGINEER
+SECURITY_ENGINEER
+SMART_CONTRACT_DEVELOPER
+SOLIDITY_DEVELOPER
+STUDENT
+TECHNICAL_WRITER
+TOKENOMICS_SPECIALIST
+UI_UX_DESIGNER
+WEB3_DEVELOPER
+WEB3_SECURITY_AUDITOR
+```
+
+---
+
+## ✅ Validation Rules
+
+### Required Fields
+- `firstName` - min 1 character (trimmed)
+- `lastName` - min 1 character (trimmed)
+- `email` - valid email format (auto-lowercased)
+- `isCommunityMember` - boolean
+- `role` - must be one of the valid roles above
+- `location` - any string
+- `openSourceKnowledge` - number between 1-10
+
+### Optional Fields
+- `roleOther` - string (required if role is "OTHER")
+- `locationOther` - string (for custom locations)
+
+### Auto-Transformations
+- `email` → trimmed and lowercased
+- `firstName` → trimmed
+- `lastName` → trimmed
+- `openSourceKnowledge` → coerced to number
+
+---
+
+## 🔧 Field Types
+
+```typescript
+{
+  firstName: string;           // Required, min 1 char
+  lastName: string;            // Required, min 1 char
+  email: string;               // Required, valid email
+  isCommunityMember: boolean;  // Required
+  role: Role;                  // Required, enum
+  roleOther: string | null;    // Optional
+  location: string;            // Required
+  locationOther: string | null;// Optional
+  openSourceKnowledge: number; // Required, 1-10
+}
+```
+
+---
+
+##  Email Notifications
+
+Upon successful registration, a welcome email is automatically sent to the registrant's email address.
+
+**Email Template**:
+- **Subject**: "Welcome to Takeoff Event!"
+- **Content**: Personalized welcome message with registrant's first name
+
+---
+
+## 🧪 Testing
+
+### Using cURL
+
+```bash
+curl -X POST http://localhost:3000/api/events/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john@example.com",
+    "isCommunityMember": true,
+    "role": "FRONTEND_DEVELOPER",
+    "roleOther": null,
+    "location": "Remote",
+    "locationOther": null,
+    "openSourceKnowledge": 7
+  }'
+```
+
+### Using JavaScript/Fetch
+
+```javascript
+const response = await fetch('http://localhost:3000/api/events/register', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'john@example.com',
+    isCommunityMember: true,
+    role: 'FRONTEND_DEVELOPER',
+    roleOther: null,
+    location: 'Remote',
+    locationOther: null,
+    openSourceKnowledge: 7,
+  }),
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+---
+
+## 🛠️ Development Setup
 
 ### Prerequisites
-
-- Node.js (v18 or higher)
+- Node.js 18+
 - PostgreSQL database
+- npm or yarn
+
+### Environment Variables
+
+Create a `.env` file:
+
+```env
+PORT=3000
+DATABASE_URL="postgresql://user:password@host:5432/database?sslmode=require"
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+SMTP_TIMEOUT=60000
+```
 
 ### Installation
 
-1.  Clone the repository:
-    ```bash
-    git clone https://github.com/OpenSourceNest/takeoff-backend.git
-    cd takeoff-backend
-    ```
+```bash
+# Install dependencies
+npm install
 
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
+# Generate Prisma Client
+npx prisma generate
 
-3.  Configure environment variables:
-    Create a `.env` file in the root directory and add your database URL:
-    ```
-    DATABASE_URL="postgres://user:password@host:5432/dbname"
-    PORT=3000
-    
-    # Email Configuration (Nodemailer)
-    SMTP_HOST="smtp.example.com"
-    SMTP_PORT=587
-    SMTP_USER="your_user"
-    SMTP_PASS="your_password"
-    ```
+# Run database migrations
+npx prisma db push
 
-4.  Synchronize the database schema:
-    ```bash
-    npx prisma db push
-    ```
+# Start development server
+npm run dev
+```
 
-5.  Generate the Prisma Client:
-    ```bash
-    npx prisma generate
-    ```
+Server will start on `http://localhost:3000`
 
-### Running the Server
+---
 
--   **Development Mode:**
-    ```bash
-    npm run dev
-    ```
-    Runs the server using `nodemon` and `tsx` on port 3000 (or `PORT` defined in `.env`).
+## 🏗️ Tech Stack
 
--   **Production Build:**
-    ```bash
-    npm install && npm run build
-    npm start
-    ```
+- **Runtime**: Node.js + Express.js
+- **Database**: PostgreSQL + Prisma ORM
+- **Validation**: Zod
+- **Email**: Nodemailer
+- **Language**: TypeScript
 
-## API Endpoints
+---
 
-### Base URL
+## 📂 Project Structure
 
-All event API endpoints are prefixed with `/api/events`.
+```
+takeoff-backend/
+├── src/
+│   ├── controllers/
+│   │   └── eventController.ts    # Business logic
+│   ├── routes/
+│   │   └── eventRoutes.ts        # API routes
+│   ├── schemas/
+│   │   └── event.schema.ts       # Zod validation schemas
+│   ├── lib/
+│   │   └── prisma.ts             # Prisma client
+│   └── utils/
+│       └── mail.util.ts          # Email utility
+├── prisma/
+│   └── schema.prisma             # Database schema
+├── app.ts                        # Main app file
+└── .env                          # Environment variables
+```
 
-### 1. Root Check
--   **Method:** `GET`
--   **URL:** `/`
--   **Description:** Returns the count of total registrations. Useful for verifying database connection.
--   **Response:**
-    ```json
-    "There are 5 registrations in the database."
-    ```
+---
 
-### 2. Create Registration
--   **Method:** `POST`
--   **URL:** `/api/events/register`
--   **Description:** Creates a new event registration.
--   **Body:**
-    ```json
-    {
-      "firstName": "John",
-      "lastName": "Doe",
-      "email": "john.doe@example.com",
-      "isCommunityMember": true,
-      "role": "DEVELOPER",
-      "roleOther": "string (optional)",
-      "location": "New York",
-      "locationOther": "string (optional)",
-      "openSourceKnowledge": "5" 
-    }
-    ```
-    *Note: `openSourceKnowledge` can be a string or number (1-10).*
+## 🐛 Common Issues
 
--   **Success Response (201):**
-    ```json
-    {
-      "success": true,
-      "data": {
-        "id": "cm1...",
-        "firstName": "John",
-        ...
-        "createdAt": "2024-..."
-      }
-    }
-    ```
+### Email not sending?
+- Check SMTP credentials in `.env`
+- Ensure Gmail "App Passwords" is used (not regular password)
+- Check server logs for email errors
 
-### 3. Get All Registrations
--   **Method:** `GET`
--   **URL:** `/api/events/registrations`
--   **Description:** Retrieves a list of all registrations, ordered by newest first.
--   **Success Response (200):**
-    ```json
-    {
-      "success": true,
-      "data": [
-        { "id": "...", ... },
-        { "id": "...", ... }
-      ]
-    }
-    ```
+### Validation errors?
+- Ensure all required fields are provided
+- Verify `role` is exactly one of the valid enum values (case-sensitive)
+- Check `openSourceKnowledge` is between 1-10
 
-### 4. Update Registration
--   **Method:** `PUT`
--   **URL:** `/api/events/registrations/:id`
--   **Description:** Updates an existing registration.
--   **Params:** `id` (String) - The ID of the registration to update.
--   **Body:** (Partial object of create body)
-    ```json
-    {
-      "firstName": "Jane",
-      "openSourceKnowledge": 8
-    }
-    ```
--   **Success Response (200):**
-    ```json
-    {
-      "success": true,
-      "data": { ...updatedObject }
-    }
-    ```
+### CORS errors?
+- Allowed origins in development: `localhost:3000`, `localhost:3001`, `localhost:5173`, `localhost:8080`
+- Contact backend team to add your frontend URL
 
-### 5. Delete Registration
--   **Method:** `DELETE`
--   **URL:** `/api/events/registrations/:id`
--   **Description:** Deletes a registration by ID.
--   **Success Response (200):**
-    ```json
-    {
-      "success": true,
-      "message": "Registration deleted successfully"
-    }
-    ```
+---
 
-## Email Notifications
+## 📞 Support
 
-The system is configured to send automatic welcome emails upon successful registration.
+For questions or issues, contact the backend team or create an issue in the repository.
 
--   **Trigger:** Successful `POST /api/events/register` request.
--   **Service:** Nodemailer (SMTP).
--   **Configuration:** Requires valid SMTP credentials in `.env`.
--   **Behavior:** Fire-and-forget (non-blocking). Errors are logged but do not fail the API request.
-
-## Deployment (Render)
-
-The project is configured for deployment on platforms like Render.
-
--   **Build Command:** `npm install && npm run build`
--   **Start Command:** `npm start`
+**Repository**: [https://github.com/OpenSourceNest/takeoff-backend](https://github.com/OpenSourceNest/takeoff-backend)

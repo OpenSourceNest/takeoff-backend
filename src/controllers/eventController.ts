@@ -1,6 +1,8 @@
 import { prisma } from "../lib/prisma";
 import { Request, Response } from "express";
-import nodemailer from "nodemailer";
+import { SendMail } from "../utils/mail.util";
+import { createEventRegistrationSchema, updateEventRegistrationSchema } from "../schemas/event.schema";
+import { z } from "zod";
 
 export const createEventRegistration = async (req: Request, res: Response) => {
   // console.log("=== REGISTRATION ENDPOINT HIT ===");
@@ -8,86 +10,32 @@ export const createEventRegistration = async (req: Request, res: Response) => {
   // TODO - The above should be moved to middleware
 
   try {
-    const {
-      firstName,
-      lastName,
-      email,
-      isCommunityMember,
-      role,
-      roleOther,
-      location,
-      locationOther,
-      openSourceKnowledge,
-    } = req.body;
+    // Validate and parse request data using Zod
+    const validatedData = createEventRegistrationSchema.parse(req.body);
 
-    // Basic validation
-    if (!firstName?.trim() || !lastName?.trim() || !email?.trim()) {
-      return res.status(400).json({
-        success: false,
-        error: "First name, last name, and email are required.",
-      });
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).json({
-        success: false,
-        error: "Invalid email format.",
-      });
-    }
-
-    const knowledge = parseInt(openSourceKnowledge);
-    if (isNaN(knowledge) || knowledge < 1 || knowledge > 10) {
-      return res.status(400).json({
-        success: false,
-        error: "Open source knowledge must be between 1 and 10.",
-      });
-    }
-
+    // Create registration with validated data
     const registration = await prisma.eventRegistration.create({
       data: {
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        email: email.trim().toLowerCase(),
-        isCommunityMember,
-        role,
-        roleOther: roleOther?.trim() || null,
-        location: location?.trim(),
-        locationOther: locationOther?.trim() || null,
-        openSourceKnowledge: knowledge,
+        firstName: validatedData.firstName,
+        lastName: validatedData.lastName,
+        email: validatedData.email,
+        isCommunityMember: validatedData.isCommunityMember,
+        role: validatedData.role,
+        roleOther: validatedData.roleOther || null,
+        location: validatedData.location,
+        locationOther: validatedData.locationOther || null,
+        openSourceKnowledge: validatedData.openSourceKnowledge,
       },
     });
 
-    // Send email after successful registration
-    console.log("About to send email to:", email);
-    console.log("SMTP Config:", {
-      host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT,
-      user: process.env.SMTP_USER ? "SET" : "NOT SET",
-      pass: process.env.SMTP_PASS ? "SET" : "NOT SET",
-    });
-
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT),
-      secure: true,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-      tls: {
-        rejectUnauthorized: false,
-      },
-      connectionTimeout: Number(process.env.SMTP_TIMEOUT) || 60000,
-    });
-
+    // Send welcome email after successful registration
     try {
-      const info = await transporter.sendMail({
-        from: `"Takeoff" <${process.env.SMTP_SENDER}>`,
-        to: email,
+      await SendMail({
+        to: validatedData.email,
         subject: "Welcome to Takeoff Event!",
         html: `
           <div style="font-family: Arial, sans-serif; padding: 20px;">
-            <h1>Welcome, ${firstName}!</h1>
+            <h1>Welcome, ${validatedData.firstName}!</h1>
             <p>Thank you for registering for the Takeoff event.</p>
             <p>We are excited to see you there.</p>
             <br>
@@ -96,9 +44,8 @@ export const createEventRegistration = async (req: Request, res: Response) => {
           </div>
         `,
       });
-      console.log("Email sent successfully! Message ID:", info.messageId);
     } catch (emailError) {
-      console.error("Email sending failed:", emailError);
+      console.error("❌ Failed to send welcome email:", emailError);
     }
 
     res.status(201).json({
@@ -106,6 +53,16 @@ export const createEventRegistration = async (req: Request, res: Response) => {
       data: registration,
     });
   } catch (error: any) {
+    // Handle Zod validation errors
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        success: false,
+        error: error.issues[0].message, // Return first validation error
+        validationErrors: error.issues, // Include all validation errors for debugging
+      });
+    }
+
+    // Handle Prisma duplicate email error
     if (error.code === "P2002" && error.meta?.target?.includes("email")) {
       return res.status(409).json({
         success: false,
@@ -115,7 +72,7 @@ export const createEventRegistration = async (req: Request, res: Response) => {
 
     res.status(500).json({
       success: false,
-      error: error.message || "An error occurred during registration.",
+      error: error.message || "Unable to register.",
     });
   }
 };
@@ -141,24 +98,50 @@ export const getEventRegistrations = async (_req: Request, res: Response) => {
   }
 };
 
+/*
+ * GET SINGLE REGISTRATION
+ */
+export const getEventRegistration = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params as { id: string };
+
+    const registration = await prisma.eventRegistration.findUnique({
+      where: { id },
+    });
+
+    if (!registration) {
+      return res.status(404).json({
+        success: false,
+        error: "Registration not found.",
+      });
+    }
+
+    res.json({
+      success: true,
+      data: registration,
+    });
+  } catch {
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch registration.",
+    });
+  }
+};
+
+
 /**
  * UPDATE REGISTRATION
  */
 export const updateEventRegistration = async (req: Request, res: Response) => {
   try {
     const { id } = req.params as { id: string };
-    const updateData = { ...req.body };
 
-    if (updateData.openSourceKnowledge) {
-      updateData.openSourceKnowledge = parseInt(
-        updateData.openSourceKnowledge,
-        10
-      );
-    }
+    // Validate update data using Zod
+    const validatedData = updateEventRegistrationSchema.parse(req.body);
 
     const registration = await prisma.eventRegistration.update({
       where: { id },
-      data: updateData,
+      data: validatedData,
     });
 
     res.json({
@@ -166,6 +149,16 @@ export const updateEventRegistration = async (req: Request, res: Response) => {
       data: registration,
     });
   } catch (error: any) {
+    // Handle Zod validation errors
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        success: false,
+        error: error.issues[0].message,
+        validationErrors: error.issues,
+      });
+    }
+
+    // Handle Prisma errors
     if (error.code === "P2025") {
       return res.status(404).json({
         success: false,

@@ -8,7 +8,7 @@ const testData = {
   lastName: "User",
   email: testEmail,
   isCommunityMember: true,
-  role: "DEVELOPER",
+  role: "FULLSTACK_DEVELOPER",
   location: "Lagos",
   openSourceKnowledge: "8",
 };

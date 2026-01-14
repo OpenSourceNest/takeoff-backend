@@ -4,7 +4,7 @@ Backend API for the Takeoff event registration system built with Express.js, Pri
 
 ## 🚀 Base URL
 
-- **Development**: `http://localhost:3000`
+- **Development**: `http://localhost:4500`
 - **Production**: `https://takeoff.opensourcenest.org` (TBD)
 
 ---
@@ -308,7 +308,7 @@ Upon successful registration, a welcome email is automatically sent to the regis
 ### Using cURL
 
 ```bash
-curl -X POST http://localhost:3000/api/events/register \
+curl -X POST http://localhost:4500/api/events/register \
   -H "Content-Type: application/json" \
   -d '{
     "firstName": "John",
@@ -326,7 +326,7 @@ curl -X POST http://localhost:3000/api/events/register \
 ### Using JavaScript/Fetch
 
 ```javascript
-const response = await fetch('http://localhost:3000/api/events/register', {
+const response = await fetch('http://localhost:4500/api/events/register', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -362,7 +362,7 @@ console.log(data);
 Create a `.env` file:
 
 ```env
-PORT=3000
+PORT=4500
 DATABASE_URL="postgresql://user:password@host:5432/database?sslmode=require"
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=465
@@ -387,7 +387,7 @@ npx prisma db push
 npm run dev
 ```
 
-Server will start on `http://localhost:3000`
+Server will start on `http://localhost:4500`
 
 ---
 
@@ -437,7 +437,7 @@ takeoff-backend/
 - Check `openSourceKnowledge` is between 1-10
 
 ### CORS errors?
-- Allowed origins in development: `localhost:3000`, `localhost:3001`, `localhost:5173`, `localhost:8080`
+- Allowed origins in development: `localhost:4500`, `localhost:3001`, `localhost:5173`, `localhost:8080`
 - Contact backend team to add your frontend URL
 
 ---

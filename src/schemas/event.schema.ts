@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Role } from "../../generated/prisma/index.js";
+import { Profession, ReferralSource, PipelineInterest } from "../../generated/prisma/index.js";
 
 /**
  * Zod schema for creating an event registration
@@ -14,10 +14,15 @@ export const createEventRegistrationSchema = z.object({
         .email("Invalid email format")
         .transform((val) => val.trim().toLowerCase()),
     isCommunityMember: z.boolean(),
-    role: z.nativeEnum(Role),
-    roleOther: z.string().optional().nullable(),
+    communityDetails: z.string().optional().nullable(),
+    profession: z.array(z.nativeEnum(Profession)),
+    professionOther: z.string().optional().nullable(),
     location: z.string(),
     locationOther: z.string().optional().nullable(),
+    referralSource: z.nativeEnum(ReferralSource),
+    newsletterSub: z.boolean(),
+    pipelineInterest: z.nativeEnum(PipelineInterest),
+    interests: z.string().optional().nullable(),
     openSourceKnowledge: z.coerce
         .number()
         .min(1, "Open source knowledge must be at least 1")

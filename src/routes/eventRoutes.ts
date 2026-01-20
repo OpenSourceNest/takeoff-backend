@@ -4,15 +4,17 @@ import {
   getEventRegistrations,
   getEventRegistration,
   updateEventRegistration,
-  deleteEventRegistration,
+  searchEventRegistrations,
 } from "../controllers/eventController";
+
+import { authorize } from "../middleware/authorize";
+import { Role } from "../../generated/prisma";
 
 const router = express.Router();
 
 router.post("/register", createEventRegistration);
-router.get("/registrations", getEventRegistrations);
-router.get("/registrations/:id", getEventRegistration);
-router.put("/registrations/:id", updateEventRegistration);
-router.delete("/registrations/:id", deleteEventRegistration);
-
+router.get("/registrations", authorize([Role.ADMIN]), getEventRegistrations);
+router.get("/registrations/:id", authorize([Role.ADMIN]), getEventRegistration);
+router.put("/registrations/:id", authorize([Role.ADMIN]), updateEventRegistration);
+router.get("/search", authorize([Role.ADMIN]), searchEventRegistrations);
 export default router;

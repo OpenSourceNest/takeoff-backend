@@ -25,10 +25,15 @@ Register a new participant for the event.
   "lastName": "Doe",
   "email": "user@example.com",
   "isCommunityMember": true,
-  "role": "FULLSTACK_DEVELOPER",
-  "roleOther": null,
+  "communityDetails": "Open Source Nest",
+  "profession": "FULLSTACK_DEVELOPER",
+  "professionOther": null,
   "location": "Lagos, Nigeria",
   "locationOther": null,
+  "referralSource": "SOCIAL_MEDIA",
+  "newsletterSub": true,
+  "pipelineInterest": "YES",
+  "interests": "React, TypeScript, AI",
   "openSourceKnowledge": 8
 }
 ```
@@ -43,10 +48,11 @@ Register a new participant for the event.
     "lastName": "Doe",
     "email": "user@example.com",
     "isCommunityMember": true,
-    "role": "FULLSTACK_DEVELOPER",
-    "roleOther": null,
+    "profession": "FULLSTACK_DEVELOPER",
+    "professionOther": null,
     "location": "Lagos, Nigeria",
     "locationOther": null,
+    "referralSource": "SOCIAL_MEDIA",
     "openSourceKnowledge": 8,
     "createdAt": "2026-01-14T12:00:00.000Z"
   }
@@ -165,9 +171,13 @@ Update an existing registration.
 
 ---
 
-##  Available Roles
+##  Available Professions
 
-Total: **30 roles**
+Total: **32 roles**
+
+### General (2)
+- `PROFESSIONAL_DEVELOPER`
+- `HOBBYIST`
 
 ### Development (6)
 - `FRONTEND_DEVELOPER`
@@ -213,7 +223,7 @@ Total: **30 roles**
 - `EDUCATOR`
 
 ### Other (1)
-- `OTHER` - Use `roleOther` field to specify
+- `OTHER` - Use `professionOther` field to specify
 
 ### Complete List (Alphabetical)
 
@@ -233,10 +243,12 @@ EDUCATOR
 FOUNDER
 FRONTEND_DEVELOPER
 FULLSTACK_DEVELOPER
+HOBBYIST
 IT_SUPPORT
 NFT_DEVELOPER
 OTHER
 PRODUCT_MANAGER
+PROFESSIONAL_DEVELOPER
 PROJECT_MANAGER
 QA_ENGINEER
 SECURITY_ENGINEER
@@ -259,13 +271,18 @@ WEB3_SECURITY_AUDITOR
 - `lastName` - min 1 character (trimmed)
 - `email` - valid email format (auto-lowercased)
 - `isCommunityMember` - boolean
-- `role` - must be one of the valid roles above
+- `profession` - must be one of the valid professions above
 - `location` - any string
 - `openSourceKnowledge` - number between 1-10
 
 ### Optional Fields
-- `roleOther` - string (required if role is "OTHER")
+- `professionOther` - string (required if profession is "OTHER")
 - `locationOther` - string (for custom locations)
+- `communityDetails` - string
+- `referralSource` - enum
+- `newsletterSub` - boolean
+- `pipelineInterest` - enum
+- `interests` - string
 
 ### Auto-Transformations
 - `email` → trimmed and lowercased
@@ -283,10 +300,14 @@ WEB3_SECURITY_AUDITOR
   lastName: string;            // Required, min 1 char
   email: string;               // Required, valid email
   isCommunityMember: boolean;  // Required
-  role: Role;                  // Required, enum
-  roleOther: string | null;    // Optional
+  profession: Profession;      // Required, enum
+  professionOther: string | null; // Optional
   location: string;            // Required
   locationOther: string | null;// Optional
+  referralSource: ReferralSource; // Optional
+  newsletterSub: boolean;      // Optional
+  pipelineInterest: PipelineInterest; // Optional
+  interests: string | null;    // Optional
   openSourceKnowledge: number; // Required, 1-10
 }
 ```
@@ -315,8 +336,8 @@ curl -X POST http://localhost:4500/api/events/register \
     "lastName": "Doe",
     "email": "john@example.com",
     "isCommunityMember": true,
-    "role": "FRONTEND_DEVELOPER",
-    "roleOther": null,
+    "profession": "FRONTEND_DEVELOPER",
+    "professionOther": null,
     "location": "Remote",
     "locationOther": null,
     "openSourceKnowledge": 7
@@ -336,8 +357,8 @@ const response = await fetch('http://localhost:4500/api/events/register', {
     lastName: 'Doe',
     email: 'john@example.com',
     isCommunityMember: true,
-    role: 'FRONTEND_DEVELOPER',
-    roleOther: null,
+    profession: 'FRONTEND_DEVELOPER',
+    professionOther: null,
     location: 'Remote',
     locationOther: null,
     openSourceKnowledge: 7,
@@ -433,7 +454,7 @@ takeoff-backend/
 
 ### Validation errors?
 - Ensure all required fields are provided
-- Verify `role` is exactly one of the valid enum values (case-sensitive)
+- Verify `profession` is exactly one of the valid enum values (case-sensitive)
 - Check `openSourceKnowledge` is between 1-10
 
 ### CORS errors?

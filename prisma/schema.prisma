@@ -12,7 +12,11 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
-enum Role {
+
+enum Profession {
+  STUDENT
+  PROFESSIONAL_DEVELOPER
+  HOBBYIST
   FRONTEND_DEVELOPER
   BACKEND_DEVELOPER
   FULLSTACK_DEVELOPER
@@ -27,7 +31,6 @@ enum Role {
   TECHNICAL_WRITER
   CONTENT_CREATOR
   COMMUNITY_MANAGER
-  STUDENT
   EDUCATOR
   FOUNDER
   IT_SUPPORT
@@ -45,20 +48,56 @@ enum Role {
   OTHER
 }
 
+enum ReferralSource {
+  SOCIAL_MEDIA
+  FRIEND_COLLEAGUE
+  ONLINE_SEARCH
+  OTHER
+}
+
+enum PipelineInterest {
+  YES
+  NO
+  NOT_SURE
+}
+
 model EventRegistration {
-  id                    String   @id @default(cuid())
+  id                    String          @id @default(cuid())
   firstName             String
   lastName              String
-  email                 String   @unique
+  email                 String          @unique
   isCommunityMember     Boolean
-  role                  Role
-  roleOther             String?  // if role is OTHER
   location              String
-  locationOther         String?  // if location is others
-  openSourceKnowledge   Int      @db.SmallInt // 1-10 scale
-  createdAt             DateTime @default(now())
+  locationOther         String?         // if location is others
+  openSourceKnowledge   Int             @db.SmallInt // 1-10 scale
+  
+  // New survey fields
+  profession            Profession[]    @default([OTHER])
+  professionOther       String?         // if profession is OTHER
+  referralSource        ReferralSource  @default(OTHER)
+  newsletterSub         Boolean         @default(false)
+  pipelineInterest      PipelineInterest @default(NOT_SURE)
+  interests             String?         // Specific topics/tech interested in
+  communityDetails      String?         // If community member, specify which
+
+  createdAt             DateTime        @default(now())
   
   @@map("event_registrations")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  password  String
+  role      Role       @default(USER)
+  createdAt DateTime   @default(now())
+
+  @@map("users")
 }
 
 

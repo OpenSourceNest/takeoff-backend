@@ -9,10 +9,15 @@ const testRegistration = async () => {
         lastName: "OpenSource",
         email: "mosesjohnson706@gmail.com",
         isCommunityMember: true,
-        role: "FULLSTACK_DEVELOPER",
-        roleOther: null,
+        communityDetails: "Takeoff Community",
+        profession: ["FULLSTACK_DEVELOPER", "DEVOPS_ENGINEER"],
+        professionOther: null,
         location: "Remote",
         locationOther: null,
+        referralSource: "FRIEND_COLLEAGUE",
+        newsletterSub: true,
+        pipelineInterest: "YES",
+        interests: "Blockchain, AI",
         openSourceKnowledge: 9,
     };
 

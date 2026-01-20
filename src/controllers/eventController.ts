@@ -1,14 +1,10 @@
 import { prisma } from "../lib/prisma";
 import { Request, Response } from "express";
-import { SendMail } from "../utils/mail.util";
+// import { SendMail } from "../utils/mail.util";
 import { createEventRegistrationSchema, updateEventRegistrationSchema } from "../schemas/event.schema";
 import { z } from "zod";
 
 export const createEventRegistration = async (req: Request, res: Response) => {
-  // console.log("=== REGISTRATION ENDPOINT HIT ===");
-  // console.log("Request received:", req.method, req.url);
-  // TODO - The above should be moved to middleware
-
   try {
     // Validate and parse request data using Zod
     const validatedData = createEventRegistrationSchema.parse(req.body);
@@ -20,33 +16,23 @@ export const createEventRegistration = async (req: Request, res: Response) => {
         lastName: validatedData.lastName,
         email: validatedData.email,
         isCommunityMember: validatedData.isCommunityMember,
-        role: validatedData.role,
-        roleOther: validatedData.roleOther || null,
+        communityDetails: validatedData.communityDetails || null,
+        profession: validatedData.profession,
+        professionOther: validatedData.professionOther || null,
         location: validatedData.location,
         locationOther: validatedData.locationOther || null,
+        referralSource: validatedData.referralSource,
+        newsletterSub: validatedData.newsletterSub,
+        pipelineInterest: validatedData.pipelineInterest,
+        interests: validatedData.interests || null,
         openSourceKnowledge: validatedData.openSourceKnowledge,
       },
     });
 
     // Send welcome email after successful registration
-    try {
-      await SendMail({
-        to: validatedData.email,
-        subject: "Welcome to Takeoff Event!",
-        html: `
-          <div style="font-family: Arial, sans-serif; padding: 20px;">
-            <h1>Welcome, ${validatedData.firstName}!</h1>
-            <p>Thank you for registering for the Takeoff event.</p>
-            <p>We are excited to see you there.</p>
-            <br>
-            <p>Best regards,</p>
-            <p>The Takeoff Team</p>
-          </div>
-        `,
-      });
-    } catch (emailError) {
-      console.error("❌ Failed to send welcome email:", emailError);
-    }
+    // write a function to send email
+
+
 
     res.status(201).json({
       success: true,
@@ -128,6 +114,34 @@ export const getEventRegistration = async (req: Request, res: Response) => {
   }
 };
 
+/**
+ * SEARCH REGISTRATIONS
+ */
+export const searchEventRegistrations = async (req: Request, res: Response) => {
+  try {
+    const { search } = req.query as { search: string };
+
+    const registrations = await prisma.eventRegistration.findMany({
+      where: {
+        OR: [
+          { firstName: { contains: search, mode: "insensitive" } },
+          { lastName: { contains: search, mode: "insensitive" } },
+          { email: { contains: search, mode: "insensitive" } },
+        ],
+      },
+    });
+
+    res.json({
+      success: true,
+      data: registrations,
+    });
+  } catch {
+    res.status(500).json({
+      success: false,
+      error: "Failed to search registrations.",
+    });
+  }
+};
 
 /**
  * UPDATE REGISTRATION
@@ -169,36 +183,6 @@ export const updateEventRegistration = async (req: Request, res: Response) => {
     res.status(400).json({
       success: false,
       error: "Failed to update registration.",
-    });
-  }
-};
-
-/**
- * DELETE REGISTRATION
- */
-export const deleteEventRegistration = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params as { id: string };
-
-    await prisma.eventRegistration.delete({
-      where: { id },
-    });
-
-    res.json({
-      success: true,
-      message: "Registration deleted successfully",
-    });
-  } catch (error: any) {
-    if (error.code === "P2025") {
-      return res.status(404).json({
-        success: false,
-        error: "Registration not found.",
-      });
-    }
-
-    res.status(400).json({
-      success: false,
-      error: "Failed to delete registration.",
     });
   }
 };

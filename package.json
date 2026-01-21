@@ -7,7 +7,9 @@
     "dev": "nodemon --exec tsx app.ts",
     "build": "npx prisma generate && tsc",
     "start": "node dist/app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "vitest"
   },
   "repository": {
     "type": "git",
@@ -44,9 +46,15 @@
     "@types/node": "^25.0.6",
     "@types/nodemailer": "^7.0.5",
     "@types/pg": "^8.16.0",
+    "@types/supertest": "^6.0.2",
+    "eslint": "^9.39.2",
+    "globals": "^17.0.0",
     "nodemon": "^3.1.11",
+    "supertest": "^7.0.0",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.53.1",
+    "vitest": "^3.0.1"
   }
 }

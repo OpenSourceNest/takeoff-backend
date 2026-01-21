@@ -6,6 +6,7 @@ import { prisma } from "./src/lib/prisma";
 
 import { requestLogger } from "./src/middleware/logger";
 import cookieParser from "cookie-parser";
+import { globalErrorHandler } from "./src/middleware/errorHandler";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -52,6 +53,9 @@ app.get("/", async (req, res) => {
 });
 
 app.use("/api/events", eventRoutes);
+
+// Global Error Handler
+app.use(globalErrorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

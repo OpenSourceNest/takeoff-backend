@@ -412,6 +412,16 @@ Server will start on `http://localhost:4500`
 
 ---
 
+## 🏗️ Architecture
+This project follows a 3-layer architecture for better separation of concerns and testability:
+1.  **Controller Layer** (`src/controllers`): Handles HTTP requests, validation, and responses. Lean and focused.
+2.  **Service Layer** (`src/services`): Contains business logic and handles database interactions using Prisma.
+3.  **Data Access Layer**: Prisma Client acting as the ORM.
+
+It also features **Global Error Handling** via middleware to ensure consistent API responses.
+
+---
+
 ## 🏗️ Tech Stack
 
 - **Runtime**: Node.js + Express.js
@@ -419,8 +429,18 @@ Server will start on `http://localhost:4500`
 - **Validation**: Zod
 - **Email**: Nodemailer
 - **Language**: TypeScript
+- **Testing**: Vitest + Supertest
 
 ---
+
+## 🤝 Contributing
+
+We welcome contributions! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) guide to get started.
+
+To run tests locally:
+```bash
+npm test
+```
 
 ## 📂 Project Structure
 
@@ -428,17 +448,23 @@ Server will start on `http://localhost:4500`
 takeoff-backend/
 ├── src/
 │   ├── controllers/
-│   │   └── eventController.ts    # Business logic
+│   │   └── eventController.ts    # Request handlers (lean)
+│   ├── services/
+│   │   └── eventService.ts       # Business logic & DB calls
 │   ├── routes/
 │   │   └── eventRoutes.ts        # API routes
 │   ├── schemas/
 │   │   └── event.schema.ts       # Zod validation schemas
+│   ├── middleware/
+│   │   └── errorHandler.ts       # Global error handling
 │   ├── lib/
 │   │   └── prisma.ts             # Prisma client
 │   └── utils/
-│       └── mail.util.ts          # Email utility
+│       ├── AppError.ts           # Custom error class
+│       └── asyncHandler.ts       # Async wrapper
 ├── prisma/
 │   └── schema.prisma             # Database schema
+├── src/tests/                    # Integration tests
 ├── app.ts                        # Main app file
 └── .env                          # Environment variables
 ```

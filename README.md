@@ -26,7 +26,7 @@ Register a new participant for the event.
   "email": "user@example.com",
   "isCommunityMember": true,
   "communityDetails": "Open Source Nest",
-  "profession": "FULLSTACK_DEVELOPER",
+    "profession": ["FULLSTACK_DEVELOPER"],
   "professionOther": null,
   "location": "Lagos, Nigeria",
   "locationOther": null,
@@ -48,7 +48,7 @@ Register a new participant for the event.
     "lastName": "Doe",
     "email": "user@example.com",
     "isCommunityMember": true,
-    "profession": "FULLSTACK_DEVELOPER",
+      "profession": ["FULLSTACK_DEVELOPER"],
     "professionOther": null,
     "location": "Lagos, Nigeria",
     "locationOther": null,
@@ -300,7 +300,7 @@ WEB3_SECURITY_AUDITOR
   lastName: string;            // Required, min 1 char
   email: string;               // Required, valid email
   isCommunityMember: boolean;  // Required
-  profession: Profession;      // Required, enum
+  profession: Profession[];    // Required, enum array
   professionOther: string | null; // Optional
   location: string;            // Required
   locationOther: string | null;// Optional
@@ -390,6 +390,9 @@ SMTP_PORT=465
 SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-password
 SMTP_TIMEOUT=60000
+
+# CORS Configuration (Required in Production)
+ALLOWED_ORIGINS="https://your-frontend-domain.com,https://another-domain.com"
 ```
 
 ### Installation
@@ -484,8 +487,9 @@ takeoff-backend/
 - Check `openSourceKnowledge` is between 1-10
 
 ### CORS errors?
-- Allowed origins in development: `localhost:4500`, `localhost:3001`, `localhost:5173`, `localhost:8080`
-- Contact backend team to add your frontend URL
+### CORS errors?
+- **Development**: Allowed origins are `localhost:4500`, `localhost:3001`, `localhost:5173`, `localhost:8080` (unless overridden by `.env`).
+- **Production**: You **MUST** set `ALLOWED_ORIGINS` in your environment variables (comma-separated URLs).
 
 ---
 

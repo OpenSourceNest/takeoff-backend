@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import eventRoutes from "./src/routes/eventRoutes";
 import { prisma } from "./src/lib/prisma";
+import { corsOptions } from "./src/config/cors";
 
 import { requestLogger } from "./src/middleware/logger";
 import cookieParser from "cookie-parser";
@@ -10,25 +11,11 @@ import { globalErrorHandler } from "./src/middleware/errorHandler";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
-const allowedOrigins =
-  process.env.NODE_ENV === "production"
-    ? ["https://takeoff.opensourcenest.org"]
-    : [
-      "http://localhost:3000",
-      "http://localhost:3001",
-      "http://localhost:5173",
-      "http://localhost:8080",
-    ];
 
 app.use(express.json());
 app.use(cookieParser());
 
-app.use(
-  cors({
-    origin: allowedOrigins,
-    credentials: true,
-  })
-);
+app.use(cors(corsOptions));
 
 // TODO - Implement middleware for logging requests
 app.use(requestLogger);

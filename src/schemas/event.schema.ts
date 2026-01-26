@@ -20,6 +20,7 @@ export const createEventRegistrationSchema = z.object({
     location: z.string(),
     locationOther: z.string().optional().nullable(),
     referralSource: z.nativeEnum(ReferralSource),
+    referralSourceOther: z.string().optional().nullable(),
     newsletterSub: z.boolean(),
     pipelineInterest: z.nativeEnum(PipelineInterest),
     interests: z.string().optional().nullable(),

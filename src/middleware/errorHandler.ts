@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "../utils/AppError";
 import { z } from "zod";
 
 export const globalErrorHandler = (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     err: any,
     req: Request,
     res: Response,

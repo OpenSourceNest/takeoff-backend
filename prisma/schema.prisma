@@ -75,6 +75,7 @@ model EventRegistration {
   profession            Profession[]    @default([OTHER])
   professionOther       String?         // if profession is OTHER
   referralSource        ReferralSource  @default(OTHER)
+  referralSourceOther   String?         // if referralSource is OTHER
   newsletterSub         Boolean         @default(false)
   pipelineInterest      PipelineInterest @default(NOT_SURE)
   interests             String?         // Specific topics/tech interested in

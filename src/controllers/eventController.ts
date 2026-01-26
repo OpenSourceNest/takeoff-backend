@@ -4,9 +4,9 @@ import * as eventService from "../services/eventService";
 import { asyncHandler } from "../utils/asyncHandler";
 import { AppError } from "../utils/AppError";
 
-export const createEventRegistration = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+export const createEventRegistration = asyncHandler(async (req: Request, res: Response) => {
   // Validate and parse request data using Zod
-  const validatedData = createEventRegistrationSchema.parse(req.body);
+  const validatedData = createEventRegistrationSchema.parse(req.body as unknown);
 
   // Create registration with validated data
   const registration = await eventService.createRegistration(validatedData);
@@ -67,7 +67,7 @@ export const searchEventRegistrations = asyncHandler(async (req: Request, res: R
 /**
  * UPDATE REGISTRATION
  */
-export const updateEventRegistration = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+export const updateEventRegistration = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params as { id: string };
 
   // Validate update data using Zod

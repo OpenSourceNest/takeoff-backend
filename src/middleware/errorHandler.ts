@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "../utils/AppError";
 import { z } from "zod";
 
 export const globalErrorHandler = (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     err: any,
     req: Request,
     res: Response,
@@ -26,9 +28,29 @@ export const globalErrorHandler = (
 
     // Handle Prisma Unique Constraint Errors
     if (err.code === "P2002") {
+        const target = err.meta?.target;
+
+        // Log meta for debugging if needed
+        if (process.env.NODE_ENV === 'development') {
+            console.error("P2002 Error Meta:", err.meta);
+        }
+
+        // Check if target is email (array or string)
+        const isEmail = (Array.isArray(target) && target.includes("email")) ||
+            (typeof target === 'string' && target.includes("email"));
+
+        // Since email is the primary unique field for registration, 
+        // we can default to this message if target is undefined or matches email.
+        if (isEmail || !target) {
+            return res.status(409).json({
+                status: "fail",
+                message: "This email address is already registered.",
+            });
+        }
+
         return res.status(409).json({
             status: "fail",
-            message: `Duplicate value for field: ${err.meta?.target}`,
+            message: `Duplicate value for field: ${target}`,
         });
     }
 

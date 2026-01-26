@@ -14,6 +14,7 @@ export const createRegistration = async (data: CreateEventRegistrationInput) => 
             location: data.location,
             locationOther: data.locationOther || null,
             referralSource: data.referralSource,
+            referralSourceOther: data.referralSourceOther || null,
             newsletterSub: data.newsletterSub,
             pipelineInterest: data.pipelineInterest,
             interests: data.interests || null,

@@ -5,8 +5,11 @@
   "main": "app.ts",
   "scripts": {
     "dev": "nodemon --exec tsx app.ts",
-    "build": "npx prisma generate && tsc",
+    "build": "prisma generate && tsc",
     "start": "node dist/app.js",
+    "postinstall": "prisma generate",
+    "migrate:prod": "prisma migrate deploy",
+    "render-build": "npm install && npm run migrate:prod && npm run build",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest"

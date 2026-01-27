@@ -6,7 +6,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -62,27 +61,27 @@ enum PipelineInterest {
 }
 
 model EventRegistration {
-  id                    String          @id @default(cuid())
-  firstName             String
-  lastName              String
-  email                 String          @unique
-  isCommunityMember     Boolean
-  location              String
-  locationOther         String?         // if location is others
-  openSourceKnowledge   Int             @db.SmallInt // 1-10 scale
-  
-  // New survey fields
-  profession            Profession[]    @default([OTHER])
-  professionOther       String?         // if profession is OTHER
-  referralSource        ReferralSource  @default(OTHER)
-  referralSourceOther   String?         // if referralSource is OTHER
-  newsletterSub         Boolean         @default(false)
-  pipelineInterest      PipelineInterest @default(NOT_SURE)
-  interests             String?         // Specific topics/tech interested in
-  communityDetails      String?         // If community member, specify which
+  id                  String  @id @default(cuid())
+  firstName           String
+  lastName            String
+  email               String  @unique
+  isCommunityMember   Boolean
+  location            String
+  locationOther       String? // if location is others
+  openSourceKnowledge Int     @db.SmallInt // 1-10 scale
 
-  createdAt             DateTime        @default(now())
-  
+  // New survey fields
+  profession          Profession[]     @default([OTHER])
+  professionOther     String? // if profession is OTHER
+  referralSource      ReferralSource   @default(OTHER)
+  referralSourceOther String? // if referralSource is OTHER
+  newsletterSub       Boolean          @default(false)
+  pipelineInterest    PipelineInterest @default(NOT_SURE)
+  interests           String? // Specific topics/tech interested in
+  communityDetails    String? // If community member, specify which
+
+  createdAt DateTime @default(now())
+
   @@map("event_registrations")
 }
 
@@ -92,13 +91,11 @@ enum Role {
 }
 
 model User {
-  id        String     @id @default(cuid())
-  email     String     @unique
+  id        String   @id @default(cuid())
+  email     String   @unique
   password  String
-  role      Role       @default(USER)
-  createdAt DateTime   @default(now())
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
 
   @@map("users")
 }
-
-

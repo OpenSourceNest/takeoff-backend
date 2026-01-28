@@ -217,7 +217,7 @@ export default function RegistrationSuccessful(name: string) {
                         </tr>
                       </tbody>
                     </table>
-                    
+
                     <p
                       style="font-size:1.2rem;line-height:1.5;margin-bottom:0px;margin-top:16px">
                       With love,<br />The OpenSourceNest Team

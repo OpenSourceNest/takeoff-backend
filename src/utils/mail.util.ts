@@ -1,54 +1,55 @@
-import * as nodemailer from "nodemailer";
-import Mail, { Attachment } from "nodemailer/lib/mailer";
-import SMTPTransport from "nodemailer/lib/smtp-transport";
-
+import protobuf from "protobufjs";
+import amqp from "amqplib";
+import path from "path";
 export interface ISendMailOptions {
   to: string;
   subject: string;
-  text?: string;
-  html?: string;
-  attachments?: Attachment[];
-  cc?: string[];
-  bcc?: string[];
+  category: "Attendee_Registration_Successful" | string;
+  extraArguments?: Record<string, string | number>;
 }
 
 export const SendMail = async ({
   to,
   subject,
-  text,
-  html,
-  attachments,
-  cc,
-  bcc,
+  category,
+  extraArguments,
 }: ISendMailOptions) => {
-  const { MAIL_USERNAME, MAIL_PASSWORD, MAIL_HOST, MAIL_SENDER } = process.env;
+  const PROTO_PATH = path.join(__dirname, "../proto/email.proto");
+  const QUEUE = "email_queue";
 
-  const transporter = nodemailer?.createTransport({
-    host: MAIL_HOST,
-    port: 465, // or 587 for TLS
-    secure: true, // true for 465, false for 587
-    auth: {
-      user: MAIL_USERNAME,
-      pass: MAIL_PASSWORD,
-    },
-  } as SMTPTransport["options"]);
+  const root = await protobuf.load(PROTO_PATH);
+  const EmailTask = root.lookupType("email_system.EmailTask");
+  const rabbitURL = process.env.RABBITMQ_URL || "amqp://localhost";
+  const connection = await amqp.connect(rabbitURL);
+  const channel = await connection.createChannel();
 
-  const mailOptions: Mail["options"] = {
-    from: `Team OSN <${MAIL_SENDER || MAIL_USERNAME}>`,
+  await channel.assertQueue(QUEUE, { durable: true });
+
+  const payload = {
+    ...extraArguments,
+
     to,
     subject,
-    html,
-    text,
-    attachments,
-    cc,
-    bcc,
+    category,
+    retryCount: 0,
+    createdAt: {
+      seconds: Math.floor(Date.now() / 1000),
+      nanos: (Date.now() % 1000) * 1e6,
+    },
   };
-  // Send the email
-  try {
-    await transporter.sendMail(mailOptions);
-    return true;
-  } catch (error) {
-    console.error("❌ Failed to send email:", error);
-  }
-};
 
+  // Verify and Encode to binary
+  const errMsg = EmailTask.verify(payload);
+  if (errMsg) throw Error(errMsg);
+
+  const encoded = EmailTask.encode(EmailTask.create(payload)).finish();
+  const buffer = Buffer.from(encoded);
+
+  // Publish to Queue
+  channel.sendToQueue(QUEUE, buffer);
+  console.log(" [x] Sent binary EmailTask");
+
+  setTimeout(() => {
+    connection.close();
+  }, 500);
+};

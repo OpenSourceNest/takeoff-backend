@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "google/protobuf/timestamp.proto"; // Standard import
+
 package email_system;
 
 message EmailTask {
@@ -8,5 +10,6 @@ message EmailTask {
   string subject = 3;
   string first_name = 4;
   uint32 retry_count = 5;
+  google.protobuf.Timestamp created_at = 6;
 }
 

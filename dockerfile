@@ -12,6 +12,9 @@ RUN npx prisma generate
 
 COPY . .
 
+# Workaround to prevent prisma build from failing due to missing DATABASE_URL
+ENV DATABASE_URL="postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
+
 RUN npm run build
 
 

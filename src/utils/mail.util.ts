@@ -1,54 +1,46 @@
-import * as nodemailer from "nodemailer";
-import Mail, { Attachment } from "nodemailer/lib/mailer";
-import SMTPTransport from "nodemailer/lib/smtp-transport";
+import {
+  getChannel,
+  getEmailTaskType,
+  REGISTRATION_QUEUE_NAME,
+} from "../lib/rabbitmq";
 
 export interface ISendMailOptions {
   to: string;
   subject: string;
-  text?: string;
-  html?: string;
-  attachments?: Attachment[];
-  cc?: string[];
-  bcc?: string[];
+  category: "Attendee_Registration_Successful" | string;
+  extraArguments?: Record<string, string | number>;
 }
 
 export const SendMail = async ({
   to,
   subject,
-  text,
-  html,
-  attachments,
-  cc,
-  bcc,
+  category,
+  extraArguments,
 }: ISendMailOptions) => {
-  const { MAIL_USERNAME, MAIL_PASSWORD, MAIL_HOST, MAIL_SENDER } = process.env;
+  const EmailTask = getEmailTaskType();
+  const channel = getChannel();
 
-  const transporter = nodemailer?.createTransport({
-    host: MAIL_HOST,
-    port: 465, // or 587 for TLS
-    secure: true, // true for 465, false for 587
-    auth: {
-      user: MAIL_USERNAME,
-      pass: MAIL_PASSWORD,
-    },
-  } as SMTPTransport["options"]);
-
-  const mailOptions: Mail["options"] = {
-    from: `Team OSN <${MAIL_SENDER || MAIL_USERNAME}>`,
+  const payload = {
+    ...extraArguments,
     to,
     subject,
-    html,
-    text,
-    attachments,
-    cc,
-    bcc,
+    category,
+    retryCount: 0,
+    createdAt: {
+      seconds: Math.floor(Date.now() / 1000),
+      nanos: (Date.now() % 1000) * 1e6,
+    },
   };
-  // Send the email
-  try {
-    await transporter.sendMail(mailOptions);
-    return true;
-  } catch (error) {
-    console.error("❌ Failed to send email:", error);
-  }
-};
 
+  const errMsg = EmailTask.verify(payload);
+  if (errMsg) throw Error(`Protobuf Verification Failed: ${errMsg}`);
+
+  const buffer = EmailTask.encode(EmailTask.create(payload)).finish();
+
+  await channel.sendToQueue(REGISTRATION_QUEUE_NAME, Buffer.from(buffer), {
+    persistent: true,
+    contentType: "application/x-protobuf",
+  });
+
+  console.log(" [x] Queued binary EmailTask");
+};

@@ -8,8 +8,11 @@ import { prisma } from "./src/lib/prisma";
 import { globalErrorHandler } from "./src/middleware/errorHandler";
 import { requestLogger } from "./src/middleware/logger";
 import eventRoutes from "./src/routes/eventRoutes";
+import healthRoutes from "./src/routes/healthRoutes";
+import { initMessenger } from "./src/lib/rabbitmq";
 
 dotenv.config();
+initMessenger();
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -20,9 +23,9 @@ app.use(cors(corsOptions));
 
 // TODO - Implement middleware for logging requests
 app.use(requestLogger);
+app.use(healthRoutes);
 
 app.get("/", async (req, res) => {
-  console.log("Root endpoint hit!");
   try {
     if (process.env.NODE_ENV === "development") {
       const count = await prisma.eventRegistration.count();

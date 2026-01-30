@@ -81,3 +81,20 @@ export const updateEventRegistration = asyncHandler(async (req: Request, res: Re
   });
 });
 
+/**
+ * CHECK-IN ATTENDEE
+ */
+export const checkInAttendee = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params as { id: string };
+
+  const registration = await eventService.checkInAttendee(id);
+
+  if (!registration) {
+    return next(new AppError("Registration not found.", 404));
+  }
+
+  res.json({
+    success: true,
+    data: registration,
+  });
+});

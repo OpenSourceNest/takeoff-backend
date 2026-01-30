@@ -1,7 +1,9 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import eventRoutes from "./src/routes/eventRoutes";
+import eventRoutes from "./src/routes/eventRoutes.js";
+import analyticsRoutes from "./src/routes/analyticsRoutes.js";
+import authRoutes from "./src/routes/authRoutes.js";
 import { prisma } from "./src/lib/prisma";
 import { corsOptions } from "./src/config/cors";
 
@@ -11,6 +13,7 @@ import { globalErrorHandler } from "./src/middleware/errorHandler";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
+// Backend restart trigger v5
 
 app.use(express.json());
 app.use(cookieParser());
@@ -39,6 +42,9 @@ app.get("/", async (req, res) => {
   }
 });
 
+
+app.use("/api/auth", authRoutes);
+app.use("/api/analytics", analyticsRoutes); // Mounted at root /api/analytics to avoid collision with event :id
 app.use("/api/events", eventRoutes);
 
 // Global Error Handler

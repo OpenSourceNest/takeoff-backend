@@ -6,6 +6,7 @@ export const createRegistration = async (data: CreateEventRegistrationInput) => 
         data: {
             firstName: data.firstName,
             lastName: data.lastName,
+            gender: data.gender,
             email: data.email,
             isCommunityMember: data.isCommunityMember,
             communityDetails: data.communityDetails || null,
@@ -32,6 +33,7 @@ export const getAllRegistrations = async () => {
 export const getRegistrationById = async (id: string) => {
     return await prisma.eventRegistration.findUnique({
         where: { id },
+        include: { event: true }
     });
 };
 
@@ -51,5 +53,18 @@ export const updateRegistration = async (id: string, data: UpdateEventRegistrati
     return await prisma.eventRegistration.update({
         where: { id },
         data,
+    });
+};
+
+/**
+ * Update listener check-in status
+ */
+export const checkInAttendee = async (registrationId: string) => {
+    return await prisma.eventRegistration.update({
+        where: { id: registrationId },
+        data: {
+            checkedIn: true,
+            checkInTime: new Date()
+        }
     });
 };

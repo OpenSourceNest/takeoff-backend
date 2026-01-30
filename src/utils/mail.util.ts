@@ -1,6 +1,9 @@
-import protobuf from "protobufjs";
-import amqp from "amqplib";
-import path from "path";
+import {
+  getChannel,
+  getEmailTaskType,
+  REGISTRATION_QUEUE_NAME,
+} from "../lib/rabbitmq";
+
 export interface ISendMailOptions {
   to: string;
   subject: string;
@@ -14,20 +17,11 @@ export const SendMail = async ({
   category,
   extraArguments,
 }: ISendMailOptions) => {
-  const PROTO_PATH = path.join(__dirname, "../proto/email.proto");
-  const QUEUE = "email_queue";
-
-  const root = await protobuf.load(PROTO_PATH);
-  const EmailTask = root.lookupType("email_system.EmailTask");
-  const rabbitURL = process.env.RABBITMQ_URL || "amqp://localhost";
-  const connection = await amqp.connect(rabbitURL);
-  const channel = await connection.createChannel();
-
-  await channel.assertQueue(QUEUE, { durable: true });
+  const EmailTask = getEmailTaskType();
+  const channel = getChannel();
 
   const payload = {
     ...extraArguments,
-
     to,
     subject,
     category,
@@ -38,18 +32,15 @@ export const SendMail = async ({
     },
   };
 
-  // Verify and Encode to binary
   const errMsg = EmailTask.verify(payload);
-  if (errMsg) throw Error(errMsg);
+  if (errMsg) throw Error(`Protobuf Verification Failed: ${errMsg}`);
 
-  const encoded = EmailTask.encode(EmailTask.create(payload)).finish();
-  const buffer = Buffer.from(encoded);
+  const buffer = EmailTask.encode(EmailTask.create(payload)).finish();
 
-  // Publish to Queue
-  channel.sendToQueue(QUEUE, buffer);
-  console.log(" [x] Sent binary EmailTask");
+  await channel.sendToQueue(REGISTRATION_QUEUE_NAME, Buffer.from(buffer), {
+    persistent: true,
+    contentType: "application/x-protobuf",
+  });
 
-  setTimeout(() => {
-    connection.close();
-  }, 500);
+  console.log(" [x] Queued binary EmailTask");
 };

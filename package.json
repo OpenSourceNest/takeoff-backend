@@ -29,6 +29,7 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.2.0",
     "@prisma/client": "^7.2.0",
+    "amqp-connection-manager": "^5.0.0",
     "amqplib": "^0.10.9",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",

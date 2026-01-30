@@ -22,7 +22,7 @@ export const authorize = (allowedRoles: string[]) => (req: Request, res: Respons
         }
 
         const decoded = jwt.verify(token, secret) as JwtPayload;
-        req.user = decoded;
+        req.user = decoded as any;
 
         if (!allowedRoles.includes(decoded.role)) {
             return res

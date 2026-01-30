@@ -98,3 +98,18 @@ export const checkInAttendee = asyncHandler(async (req: Request, res: Response, 
     data: registration,
   });
 });
+
+export const getRegistrationQRCode = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params as { id: string };
+
+  const qrCodeUrl = await eventService.generateQRCode(id);
+
+  if (!qrCodeUrl) {
+    return next(new AppError("Registration not found.", 404));
+  }
+
+  res.json({
+    success: true,
+    qrCode: qrCodeUrl,
+  });
+});

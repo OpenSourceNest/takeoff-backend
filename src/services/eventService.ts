@@ -1,5 +1,6 @@
 import { prisma } from "../lib/prisma";
 import { CreateEventRegistrationInput, UpdateEventRegistrationInput } from "../schemas/event.schema";
+import QRCode from 'qrcode';
 
 export const createRegistration = async (data: CreateEventRegistrationInput) => {
     return await prisma.eventRegistration.create({
@@ -59,6 +60,7 @@ export const updateRegistration = async (id: string, data: UpdateEventRegistrati
 /**
  * Update listener check-in status
  */
+// ... existing checkInAttendee function ...
 export const checkInAttendee = async (registrationId: string) => {
     return await prisma.eventRegistration.update({
         where: { id: registrationId },
@@ -67,4 +69,23 @@ export const checkInAttendee = async (registrationId: string) => {
             checkInTime: new Date()
         }
     });
+};
+
+export const generateQRCode = async (registrationId: string) => {
+    const registration = await prisma.eventRegistration.findUnique({
+        where: { id: registrationId },
+        include: { event: true } // Include event details for the QR payload
+    });
+
+    if (!registration) return null;
+
+    // Payload can be just the ID, or a JSON string with more info
+    const qrData = JSON.stringify({
+        id: registration.id,
+        name: `${registration.firstName} ${registration.lastName}`,
+        event: registration.event?.name
+    });
+
+    // Generate Data URL (base64 image)
+    return await QRCode.toDataURL(qrData);
 };

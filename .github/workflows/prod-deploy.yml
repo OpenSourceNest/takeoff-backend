@@ -46,7 +46,7 @@ jobs:
           script: |
             cd ${{ secrets.WORK_DIR }}
             # Log in to GHCR on the VPS so it can pull your private image
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker compose pull
             docker compose up -d
             docker image prune -f # Cleans up old images to save Hostinger disk space

@@ -89,3 +89,16 @@ export const generateQRCode = async (registrationId: string) => {
     // Generate Data URL (base64 image)
     return await QRCode.toDataURL(qrData);
 };
+
+export const getEventConfig = async () => {
+    return await prisma.event.findFirst({
+        orderBy: { createdAt: 'desc' } // Get the latest event
+    });
+};
+
+export const updateEventConfig = async (id: string, capacity: number) => {
+    return await prisma.event.update({
+        where: { id },
+        data: { targetCapacity: capacity }
+    });
+};

@@ -6,24 +6,17 @@ import { asyncHandler } from "../utils/asyncHandler.js";
  * GET - /api/events/analytics/overview
  * Returns high-level stats for dashboard cards
  */
-// Wrapped in manual try-catch for debugging 500 error
-export const getOverview = async (req: Request, res: Response) => {
-    try {
-        const stats = await analyticsService.getRegistrationStats();
-        res.json({
-            success: true,
-            data: stats
-        });
-    } catch (error: any) {
-        console.error("Analytics Overview Error:", error);
-        // Explicitly construct valid JSON response for Error object
-        res.status(500).json({
-            success: false,
-            message: error?.message || "Unknown error occurred",
-            stack: error?.stack || null
-        });
-    }
-};
+/**
+ * GET - /api/events/analytics/overview
+ * Returns high-level stats for dashboard cards
+ */
+export const getOverview = asyncHandler(async (req: Request, res: Response) => {
+    const stats = await analyticsService.getRegistrationStats();
+    res.json({
+        success: true,
+        data: stats
+    });
+});
 
 /**
  * GET - /api/events/analytics/velocity

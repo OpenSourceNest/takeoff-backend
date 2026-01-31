@@ -105,3 +105,37 @@ export const updateEventRegistration = asyncHandler(
     });
   },
 );
+
+/**
+ * GET EVENT CONFIG
+ */
+export const getEventConfig = asyncHandler(
+  async (_req: Request, res: Response) => {
+    const config = await eventService.getEventConfig();
+    res.json({
+      success: true,
+      data: config,
+    });
+  },
+);
+
+/**
+ * UPDATE EVENT CONFIG
+ */
+export const updateEventConfig = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { eventId, targetCapacity } = req.body;
+
+    if (!eventId || !targetCapacity) {
+      return next(new AppError("Event ID and Target Capacity are required.", 400));
+    }
+
+    const updated = await eventService.updateEventConfig(eventId, Number(targetCapacity));
+
+    res.json({
+      success: true,
+      data: updated,
+    });
+  },
+);
+

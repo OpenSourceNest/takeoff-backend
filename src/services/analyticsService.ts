@@ -11,7 +11,6 @@ interface DateRange {
 export const getRegistrationStats = async () => {
     // DEBUG: Check prisma state
     console.log("DEBUG: Prisma Object:", !!prisma);
-    console.log("DEBUG: Prisma Event Model:", !!prisma.event);
 
     // Get total registrations
     const totalRegistrations = await prisma.eventRegistration.count();
@@ -20,8 +19,7 @@ export const getRegistrationStats = async () => {
     const events = await prisma.event.findMany({
         select: { targetCapacity: true }
     });
-
-    const totalCapacity = events.reduce((sum: number, event: any) => sum + (event.targetCapacity || 500), 0) || 500; // Default to 500 if no events
+    const totalCapacity = events.reduce((sum: number, event: { targetCapacity: number }) => sum + (event.targetCapacity || 500), 0) || 500;
 
     // Calculate registrations for last 24h (Growth rate)
     const yesterday = new Date();

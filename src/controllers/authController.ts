@@ -1,7 +1,8 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { loginSchema } from "../schemas/auth.schema.js";
 import * as authService from "../services/authService.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { AppError } from "../utils/AppError.js";
 
 /**
  * LOGIN - POST /api/auth/login
@@ -23,15 +24,12 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 /**
  * GET CURRENT USER - GET /api/auth/me
  */
-export const getCurrentUser = asyncHandler(async (req: Request, res: Response) => {
+export const getCurrentUser = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     // User is attached to req by auth middleware
     const userId = req.user?.userId;
 
     if (!userId) {
-        return res.status(401).json({
-            success: false,
-            message: "Not authenticated"
-        });
+        return next(new AppError("Not authenticated", 401));
     }
 
     const user = await authService.getUserById(userId);

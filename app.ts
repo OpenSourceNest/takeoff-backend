@@ -9,6 +9,8 @@ import { globalErrorHandler } from "./src/middleware/errorHandler";
 import { requestLogger } from "./src/middleware/logger";
 import eventRoutes from "./src/routes/eventRoutes";
 import healthRoutes from "./src/routes/healthRoutes";
+import authRoutes from "./src/routes/authRoutes";
+import analyticsRoutes from "./src/routes/analyticsRoutes";
 import { initMessenger } from "./src/lib/rabbitmq";
 
 dotenv.config();
@@ -42,6 +44,8 @@ app.get("/", async (req, res) => {
   }
 });
 
+app.use("/api/auth", authRoutes);
+app.use("/api/analytics", analyticsRoutes);
 app.use("/api/events", eventRoutes);
 
 // Global Error Handler

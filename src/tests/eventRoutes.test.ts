@@ -29,6 +29,7 @@ describe("Event Routes", () => {
             const mockData = {
                 firstName: "John",
                 lastName: "Doe",
+                gender: "MALE",
                 email: "john.doe@example.com",
                 isCommunityMember: false,
                 profession: ["PROFESSIONAL_DEVELOPER"],
@@ -40,6 +41,7 @@ describe("Event Routes", () => {
             };
 
             // Mock Prisma return value
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (prisma.eventRegistration.create as any).mockResolvedValue({
                 id: "123",
                 ...mockData,

@@ -91,9 +91,23 @@ export const generateQRCode = async (registrationId: string) => {
 };
 
 export const getEventConfig = async () => {
-    return await prisma.event.findFirst({
-        orderBy: { createdAt: 'desc' } // Get the latest event
+    let event = await prisma.event.findFirst({
+        orderBy: { createdAt: 'desc' }
     });
+
+    if (!event) {
+        event = await prisma.event.create({
+            data: {
+                name: 'Takeoff by Open Source Nest',
+                targetCapacity: 500,
+                location: 'TBD',
+                date: new Date(),
+            }
+        });
+        console.log("Initialized default event config");
+    }
+
+    return event;
 };
 
 export const updateEventConfig = async (id: string, capacity: number) => {

@@ -15,11 +15,7 @@ export const authorize = (allowedRoles: string[]) => (req: Request, res: Respons
             .json({ message: "Access denied. No token provided." });
 
     try {
-        const secret = process.env.SECRETKEY;
-        if (!secret) {
-            console.error("SECRETKEY is not defined in environment variables.");
-            return res.status(500).json({ message: "Internal server error." });
-        }
+        const secret = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production";
 
         const decoded = jwt.verify(token, secret) as JwtPayload;
         req.user = decoded as any;

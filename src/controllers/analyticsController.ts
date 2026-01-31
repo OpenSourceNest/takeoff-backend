@@ -42,3 +42,29 @@ export const getDemographics = asyncHandler(async (req: Request, res: Response) 
         data: demographics
     });
 });
+
+/**
+ * POST - /api/analytics/track-visit
+ * Track a page visit for conversion rate calculation
+ */
+export const trackVisit = asyncHandler(async (req: Request, res: Response) => {
+    const { page, sessionId, ipAddress, userAgent, referrer } = req.body;
+
+    if (!page || !sessionId) {
+        return res.status(400).json({
+            success: false,
+            message: 'Page and sessionId are required'
+        });
+    }
+
+    // Get IP and User Agent from headers if not provided in body
+    const finalIp = ipAddress || req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const finalUserAgent = userAgent || req.headers['user-agent'];
+
+    await analyticsService.trackPageVisit(page, sessionId, String(finalIp), String(finalUserAgent), referrer);
+
+    res.json({
+        success: true,
+        message: 'Visit tracked successfully'
+    });
+});

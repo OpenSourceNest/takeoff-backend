@@ -5,6 +5,28 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { AppError } from "../utils/AppError.js";
 
 /**
+ * REGISTER - POST /api/auth/register
+ */
+export const register = asyncHandler(async (req: Request, res: Response) => {
+    // Use createAdminSchema for strong password validation
+    // We import it as createAdminSchema but it's effectively our registerSchema
+    // You might want to rename it in the schema file later for clarity
+    const { createAdminSchema } = await import("../schemas/auth.schema.js");
+
+    // Validate request body
+    const validatedData = createAdminSchema.parse(req.body);
+
+    // Register user
+    const result = await authService.register(validatedData.email, validatedData.password);
+
+    res.status(201).json({
+        success: true,
+        data: result,
+        message: "Registration successful"
+    });
+});
+
+/**
  * LOGIN - POST /api/auth/login
  */
 export const login = asyncHandler(async (req: Request, res: Response) => {
@@ -49,5 +71,44 @@ export const logout = asyncHandler(async (_req: Request, res: Response) => {
     res.json({
         success: true,
         message: "Logged out successfully"
+    });
+});
+
+/**
+ * CHANGE PASSWORD - POST /api/auth/change-password
+ */
+export const changePassword = asyncHandler(async (req: any, res: Response) => {
+    const { oldPassword, newPassword } = req.body;
+
+    // Check if user exists on request (from middleware)
+    if (!req.user || !req.user.userId) {
+        return res.status(401).json({
+            success: false,
+            message: "Not authenticated"
+        });
+    }
+
+    const userId = req.user.userId;
+
+    if (!oldPassword || !newPassword) {
+        return res.status(400).json({
+            success: false,
+            message: "Current and new password are required"
+        });
+    }
+
+    // Basic validation for new password
+    if (newPassword.length < 8) {
+        return res.status(400).json({
+            success: false,
+            message: "New password must be at least 8 characters"
+        });
+    }
+
+    await authService.changePassword(userId, oldPassword, newPassword);
+
+    res.json({
+        success: true,
+        message: "Password changed successfully"
     });
 });

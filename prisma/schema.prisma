@@ -60,6 +60,22 @@ model Event {
   @@map("events")
 }
 
+model PageVisit {
+  id        String   @id @default(cuid())
+  page      String   // e.g., "register"
+  sessionId String   // Track unique sessions
+  ipAddress String?  // Optional IP tracking
+  userAgent String?  // Browser info
+  referrer  String?  // Where they came from
+  createdAt DateTime @default(now())
+
+  @@index([page])
+  @@index([sessionId])
+  @@index([createdAt])
+  @@map("page_visits")
+}
+
+
 enum Profession {
   STUDENT
   PROFESSIONAL_DEVELOPER

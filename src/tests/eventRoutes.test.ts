@@ -40,6 +40,7 @@ describe("Event Routes", () => {
             };
 
             // Mock Prisma return value
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (prisma.eventRegistration.create as any).mockResolvedValue({
                 id: "123",
                 ...mockData,

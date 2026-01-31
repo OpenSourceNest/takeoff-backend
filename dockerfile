@@ -29,6 +29,8 @@ RUN npm install --only=production
 
 COPY --from=builder /app/dist ./dist
 
-USER node
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+
+EXPOSE 4500
 
 CMD ["node", "dist/index.js"]

@@ -64,10 +64,9 @@ export const login = async (email: string, password: string) => {
     // The user said: "if updated to admin. when the user login. he will be directed to the admin page"
     // This implies they CAN login.
 
-    // Check if user is admin
-    // if (user.role !== "ADMIN") {
-    //    throw new Error("Access denied. Admin privileges required.");
-    // }
+    if (user.role !== "ADMIN") {
+        throw new Error("Access denied. Admin privileges required.");
+    }
 
     // Verify password
     const isPasswordValid = await comparePassword(password, user.password);

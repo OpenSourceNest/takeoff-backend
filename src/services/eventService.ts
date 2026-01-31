@@ -1,11 +1,13 @@
 import { prisma } from "../lib/prisma";
 import { CreateEventRegistrationInput, UpdateEventRegistrationInput } from "../schemas/event.schema";
+import QRCode from 'qrcode';
 
 export const createRegistration = async (data: CreateEventRegistrationInput) => {
     return await prisma.eventRegistration.create({
         data: {
             firstName: data.firstName,
             lastName: data.lastName,
+            gender: data.gender,
             email: data.email,
             isCommunityMember: data.isCommunityMember,
             communityDetails: data.communityDetails || null,
@@ -32,6 +34,7 @@ export const getAllRegistrations = async () => {
 export const getRegistrationById = async (id: string) => {
     return await prisma.eventRegistration.findUnique({
         where: { id },
+        include: { event: true }
     });
 };
 
@@ -51,5 +54,65 @@ export const updateRegistration = async (id: string, data: UpdateEventRegistrati
     return await prisma.eventRegistration.update({
         where: { id },
         data,
+    });
+};
+
+/**
+ * Update listener check-in status
+ */
+// ... existing checkInAttendee function ...
+export const checkInAttendee = async (registrationId: string) => {
+    return await prisma.eventRegistration.update({
+        where: { id: registrationId },
+        data: {
+            checkedIn: true,
+            checkInTime: new Date()
+        }
+    });
+};
+
+export const generateQRCode = async (registrationId: string) => {
+    const registration = await prisma.eventRegistration.findUnique({
+        where: { id: registrationId },
+        include: { event: true } // Include event details for the QR payload
+    });
+
+    if (!registration) return null;
+
+    // Payload can be just the ID, or a JSON string with more info
+    const qrData = JSON.stringify({
+        id: registration.id,
+        name: `${registration.firstName} ${registration.lastName}`,
+        event: registration.event?.name
+    });
+
+    // Generate Data URL (base64 image)
+    return await QRCode.toDataURL(qrData);
+};
+
+export const getEventConfig = async () => {
+    let event = await prisma.event.findFirst({
+        orderBy: { createdAt: 'desc' }
+    });
+
+    if (!event) {
+        event = await prisma.event.create({
+            data: {
+                name: 'Takeoff by Open Source Nest',
+                targetCapacity: 500,
+                location: 'TBD',
+                date: new Date(),
+            }
+        });
+        console.log("Initialized default event config");
+    }
+
+    return event;
+};
+
+export const updateEventConfig = async (id: string, capacity: number) => {
+    return await prisma.event.update({
+        where: { id },
+        data: { targetCapacity: capacity }
     });
 };

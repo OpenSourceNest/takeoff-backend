@@ -33,6 +33,8 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
 COPY --from=builder /app/src/proto/email.proto ./dist/src/proto/email.proto
 
+COPY --from=builder /app/prisma ./prisma
+
 EXPOSE 4500
 
 CMD ["node", "dist/app.js"]

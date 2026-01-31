@@ -1,38 +1,38 @@
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import dotenv from "dotenv";
 import "dotenv/config";
 import express from "express";
-import cors from "cors";
-import eventRoutes from "./src/routes/eventRoutes.js";
-import analyticsRoutes from "./src/routes/analyticsRoutes.js";
-import authRoutes from "./src/routes/authRoutes.js";
-import { prisma } from "./src/lib/prisma";
 import { corsOptions } from "./src/config/cors";
-
-import { requestLogger } from "./src/middleware/logger";
-import cookieParser from "cookie-parser";
+import { prisma } from "./src/lib/prisma";
 import { globalErrorHandler } from "./src/middleware/errorHandler";
+import { requestLogger } from "./src/middleware/logger";
+import eventRoutes from "./src/routes/eventRoutes";
+import healthRoutes from "./src/routes/healthRoutes";
+import { initMessenger } from "./src/lib/rabbitmq";
+
+dotenv.config();
+initMessenger();
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
-// Backend restart trigger v5
 
 app.use(express.json());
 app.use(cookieParser());
-
 app.use(cors(corsOptions));
 
 // TODO - Implement middleware for logging requests
 app.use(requestLogger);
-
+app.use(healthRoutes);
 
 app.get("/", async (req, res) => {
-  console.log("Root endpoint hit!");
   try {
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === "development") {
       const count = await prisma.eventRegistration.count();
       res.json(
         count === 0
           ? "No registrations have been added yet."
-          : `There are ${count} registrations in the database.`
+          : `There are ${count} registrations in the database.`,
       );
     } else {
       res.json({ message: "Welcome to the Takeoff Backend API" });
@@ -42,9 +42,6 @@ app.get("/", async (req, res) => {
   }
 });
 
-
-app.use("/api/auth", authRoutes);
-app.use("/api/analytics", analyticsRoutes); // Mounted at root /api/analytics to avoid collision with event :id
 app.use("/api/events", eventRoutes);
 
 // Global Error Handler

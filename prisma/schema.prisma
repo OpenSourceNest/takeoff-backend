@@ -6,7 +6,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -61,40 +60,28 @@ enum PipelineInterest {
   NOT_SURE
 }
 
-enum Gender {
-  MALE
-  FEMALE
-}
-
 model EventRegistration {
-  id                    String          @id @default(cuid())
-  firstName             String
-  lastName              String
-  gender                Gender
-  email                 String          @unique
-  isCommunityMember     Boolean
-  location              String
-  locationOther         String?         // if location is others
-  openSourceKnowledge   Int             @db.SmallInt // 1-10 scale
-  
+  id                  String  @id @default(cuid())
+  firstName           String
+  lastName            String
+  email               String  @unique
+  isCommunityMember   Boolean
+  location            String
+  locationOther       String? // if location is others
+  openSourceKnowledge Int     @db.SmallInt // 1-10 scale
+
   // New survey fields
-  profession            Profession[]    @default([OTHER])
-  professionOther       String?         // if profession is OTHER
-  referralSource        ReferralSource  @default(OTHER)
-  referralSourceOther   String?         // if referralSource is OTHER
-  newsletterSub         Boolean         @default(false)
-  pipelineInterest      PipelineInterest @default(NOT_SURE)
-  interests             String?         // Specific topics/tech interested in
-  communityDetails      String?         // If community member, specify which
+  profession          Profession[]     @default([OTHER])
+  professionOther     String? // if profession is OTHER
+  referralSource      ReferralSource   @default(OTHER)
+  referralSourceOther String? // if referralSource is OTHER
+  newsletterSub       Boolean          @default(false)
+  pipelineInterest    PipelineInterest @default(NOT_SURE)
+  interests           String? // Specific topics/tech interested in
+  communityDetails    String? // If community member, specify which
 
-  eventId               String?
-  event                 Event?          @relation(fields: [eventId], references: [id])
+  createdAt DateTime @default(now())
 
-  checkedIn             Boolean         @default(false)
-  checkInTime           DateTime?
-
-  createdAt             DateTime        @default(now())
-  
   @@map("event_registrations")
 }
 
@@ -103,28 +90,12 @@ enum Role {
   ADMIN
 }
 
-model Event {
-  id              String   @id @default(cuid())
-  name            String
-  date            DateTime
-  location        String
-  description     String?
-  targetCapacity  Int      @default(500) // Added for analytics goals
-  
-  registrations   EventRegistration[]
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  @@index([date]) // Optimize queries for upcoming/past events
-  @@map("events")
-}
-
 model User {
-  id        String     @id @default(cuid())
-  email     String     @unique
+  id        String   @id @default(cuid())
+  email     String   @unique
   password  String
-  role      Role       @default(USER)
-  createdAt DateTime   @default(now())
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
 
   @@map("users")
 }

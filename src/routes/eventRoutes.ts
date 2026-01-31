@@ -7,6 +7,8 @@ import {
   searchEventRegistrations,
   getEventConfig,
   updateEventConfig,
+  checkInAttendee,
+  getEventRegistrationQR,
 } from "../controllers/eventController";
 
 import { authorize } from "../middleware/authorize";
@@ -26,4 +28,17 @@ router.get("/config", authorize([Role.ADMIN]), getEventConfig);
 router.put("/config", authorize([Role.ADMIN]), updateEventConfig);
 
 router.get("/search", authorize([Role.ADMIN]), searchEventRegistrations);
+
+router.post(
+  "/registrations/:id/checkin",
+  authorize([Role.ADMIN]),
+  checkInAttendee,
+);
+router.get(
+  "/registrations/:id/qr",
+  authorize([Role.ADMIN]),
+  getEventRegistrationQR,
+);
+
 export default router;
+

@@ -266,3 +266,116 @@ export const getDemographicsBreakdown = async () => {
         }
     };
 };
+
+/**
+ * Get filtered registrations with category breakdowns
+ */
+export const getFilteredRegistrations = async (filters: {
+    gender?: string;
+    profession?: string[];
+    checkedIn?: boolean;
+    newsletterSub?: boolean;
+}) => {
+    // Build where clause dynamically
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const where: any = {};
+
+    if (filters.gender) {
+        where.gender = filters.gender;
+    }
+
+    if (filters.profession && filters.profession.length > 0) {
+        // Cast to Profession enum type for Prisma
+        where.profession = {
+            hasSome: filters.profession
+        };
+    }
+
+    if (filters.checkedIn !== undefined) {
+        where.checkedIn = filters.checkedIn;
+    }
+
+    if (filters.newsletterSub !== undefined) {
+        where.newsletterSub = filters.newsletterSub;
+    }
+
+    // Get filtered registrations
+    const registrations = await prisma.eventRegistration.findMany({
+        where,
+        select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            gender: true,
+            profession: true,
+            checkedIn: true,
+            newsletterSub: true,
+            createdAt: true,
+            checkInTime: true
+        },
+        orderBy: {
+            createdAt: 'desc'
+        }
+    });
+
+    // Get category breakdowns
+    const totalCount = registrations.length;
+
+    // Gender breakdown
+    const genderBreakdown = await prisma.eventRegistration.groupBy({
+        by: ['gender'],
+        where,
+        _count: {
+            _all: true
+        }
+    });
+
+    // Check-in breakdown
+    const checkinBreakdown = await prisma.eventRegistration.groupBy({
+        by: ['checkedIn'],
+        where,
+        _count: {
+            _all: true
+        }
+    });
+
+    // Newsletter breakdown
+    const newsletterBreakdown = await prisma.eventRegistration.groupBy({
+        by: ['newsletterSub'],
+        where,
+        _count: {
+            _all: true
+        }
+    });
+
+    // Profession breakdown (need to flatten arrays)
+    const professionMap = new Map<string, number>();
+    registrations.forEach(reg => {
+        reg.profession.forEach(prof => {
+            professionMap.set(prof, (professionMap.get(prof) || 0) + 1);
+        });
+    });
+
+    return {
+        totalCount,
+        registrations,
+        breakdowns: {
+            gender: genderBreakdown.map(g => ({
+                name: g.gender,
+                count: g._count._all
+            })),
+            checkedIn: checkinBreakdown.map(c => ({
+                name: c.checkedIn ? 'Checked In' : 'Not Checked In',
+                count: c._count._all
+            })),
+            newsletterSub: newsletterBreakdown.map(n => ({
+                name: n.newsletterSub ? 'Subscribed' : 'Not Subscribed',
+                count: n._count._all
+            })),
+            profession: Array.from(professionMap.entries())
+                .map(([name, count]) => ({ name, count }))
+                .sort((a, b) => b.count - a.count)
+        }
+    };
+};

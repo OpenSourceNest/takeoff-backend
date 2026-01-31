@@ -68,3 +68,48 @@ export const trackVisit = asyncHandler(async (req: Request, res: Response) => {
         message: 'Visit tracked successfully'
     });
 });
+
+/**
+ * GET - /api/analytics/filtered
+ * Returns filtered registrations based on query parameters
+ * Query params: gender, profession, checkedIn, newsletterSub
+ */
+export const getFiltered = asyncHandler(async (req: Request, res: Response) => {
+    const { gender, profession, checkedIn, newsletterSub } = req.query;
+
+    // Parse filters
+    interface FilterParams {
+        gender?: string;
+        profession?: string[];
+        checkedIn?: boolean;
+        newsletterSub?: boolean;
+    }
+
+    const filters: FilterParams = {};
+
+    if (gender && gender !== 'all') {
+        filters.gender = gender as string;
+    }
+
+    if (profession) {
+        // Can be comma-separated string or array
+        filters.profession = Array.isArray(profession)
+            ? profession as string[]
+            : (profession as string).split(',').filter(Boolean);
+    }
+
+    if (checkedIn !== undefined && checkedIn !== 'all') {
+        filters.checkedIn = checkedIn === 'true';
+    }
+
+    if (newsletterSub !== undefined && newsletterSub !== 'all') {
+        filters.newsletterSub = newsletterSub === 'true';
+    }
+
+    const data = await analyticsService.getFilteredRegistrations(filters);
+
+    res.json({
+        success: true,
+        data
+    });
+});

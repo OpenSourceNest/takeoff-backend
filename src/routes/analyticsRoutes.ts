@@ -13,5 +13,6 @@ router.use(requireAuth, requireAdmin);
 router.get("/overview", analyticsController.getOverview);
 router.get("/velocity", analyticsController.getVelocity);
 router.get("/demographics", analyticsController.getDemographics);
+router.get("/filtered", analyticsController.getFiltered);
 
 export default router;

@@ -29,6 +29,7 @@ describe("Event Routes", () => {
             const mockData = {
                 firstName: "John",
                 lastName: "Doe",
+                gender: "MALE",
                 email: "john.doe@example.com",
                 isCommunityMember: false,
                 profession: ["PROFESSIONAL_DEVELOPER"],

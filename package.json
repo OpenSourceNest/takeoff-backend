@@ -43,6 +43,7 @@
     "protobufjs": "^8.0.0",
     "qrcode": "^1.5.4",
     "react-icons": "^5.5.0",
+    "socket.io": "^4.8.3",
     "zod": "^4.3.5"
   },
   "devDependencies": {

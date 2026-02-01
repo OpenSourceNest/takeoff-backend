@@ -29,7 +29,6 @@ model EventRegistration {
   eventId             String?
   checkInTime         DateTime?
   checkedIn           Boolean            @default(false)
-  status              RegistrationStatus @default(PENDING)
   event               Event?             @relation(fields: [eventId], references: [id])
 
   @@map("event_registrations")
@@ -135,8 +134,3 @@ enum Role {
   ADMIN
 }
 
-enum RegistrationStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}

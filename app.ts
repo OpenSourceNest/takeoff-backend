@@ -13,10 +13,18 @@ import authRoutes from "./src/routes/authRoutes";
 import analyticsRoutes from "./src/routes/analyticsRoutes";
 import { initMessenger } from "./src/lib/rabbitmq";
 
+import { createServer } from "http";
+import { initSocket } from "./src/lib/socket";
+
 dotenv.config();
 initMessenger();
 
 const app = express();
+const httpServer = createServer(app);
+
+// Initialize Socket.io
+export const io = initSocket(httpServer);
+
 const PORT = Number(process.env.PORT) || 3000;
 
 app.use(express.json());
@@ -28,19 +36,15 @@ app.use(requestLogger);
 app.use(healthRoutes);
 
 app.get("/", async (req, res) => {
-  try {
-    if (process.env.NODE_ENV === "development") {
-      const count = await prisma.eventRegistration.count();
-      res.json(
-        count === 0
-          ? "No registrations have been added yet."
-          : `There are ${count} registrations in the database.`,
-      );
-    } else {
-      res.json({ message: "Welcome to the Takeoff Backend API" });
-    }
-  } catch (error) {
-    res.status(500).json({ error: String(error) });
+  if (process.env.NODE_ENV === "development") {
+    const count = await prisma.eventRegistration.count();
+    res.json(
+      count === 0
+        ? "No registrations have been added yet."
+        : `There are ${count} registrations in the database.`,
+    );
+  } else {
+    res.json({ message: "Welcome to the Takeoff Backend API" });
   }
 });
 
@@ -51,7 +55,7 @@ app.use("/api/events", eventRoutes);
 // Global Error Handler
 app.use(globalErrorHandler);
 
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 

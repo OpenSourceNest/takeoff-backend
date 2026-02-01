@@ -1,9 +1,44 @@
 import { prisma } from "../lib/prisma";
 import { CreateEventRegistrationInput, UpdateEventRegistrationInput } from "../schemas/event.schema";
 import QRCode from 'qrcode';
+import { AppError } from "../utils/AppError";
+import { io } from "../../app";
+
+export const getEventConfig = async () => {
+    let event = await prisma.event.findFirst({
+        orderBy: { createdAt: 'desc' }
+    });
+
+    if (!event) {
+        event = await prisma.event.create({
+            data: {
+                name: 'Takeoff by Open Source Nest',
+                targetCapacity: 500,
+                location: 'TBD',
+                date: new Date(),
+            }
+        });
+        console.log("Initialized default event config");
+    }
+
+    return event;
+};
 
 export const createRegistration = async (data: CreateEventRegistrationInput) => {
-    return await prisma.eventRegistration.create({
+    // 1. Get Active Event
+    const event = await getEventConfig();
+
+    // 2. Check Capacity
+    const currentCount = await prisma.eventRegistration.count({
+        where: { eventId: event.id }
+    });
+
+    if (currentCount >= event.targetCapacity) {
+        throw new AppError("Registration failed: Event has reached full capacity.", 400);
+    }
+
+    // 3. Create Registration linked to Event
+    const registration = await prisma.eventRegistration.create({
         data: {
             firstName: data.firstName,
             lastName: data.lastName,
@@ -21,8 +56,14 @@ export const createRegistration = async (data: CreateEventRegistrationInput) => 
             pipelineInterest: data.pipelineInterest,
             interests: data.interests || null,
             openSourceKnowledge: data.openSourceKnowledge,
+            eventId: event.id // Link to active event
         },
     });
+
+    // Emit event to dashboard
+    io.emit("dashboard:update", { type: "new_registration", data: registration });
+
+    return registration;
 };
 
 export const getAllRegistrations = async () => {
@@ -60,15 +101,19 @@ export const updateRegistration = async (id: string, data: UpdateEventRegistrati
 /**
  * Update listener check-in status
  */
-// ... existing checkInAttendee function ...
 export const checkInAttendee = async (registrationId: string) => {
-    return await prisma.eventRegistration.update({
+    const updated = await prisma.eventRegistration.update({
         where: { id: registrationId },
         data: {
             checkedIn: true,
             checkInTime: new Date()
         }
     });
+
+    // Emit event to dashboard
+    io.emit("dashboard:update", { type: "checkin", data: updated });
+
+    return updated;
 };
 
 export const generateQRCode = async (registrationId: string) => {
@@ -90,27 +135,17 @@ export const generateQRCode = async (registrationId: string) => {
     return await QRCode.toDataURL(qrData);
 };
 
-export const getEventConfig = async () => {
-    let event = await prisma.event.findFirst({
-        orderBy: { createdAt: 'desc' }
+export const updateEventConfig = async (id: string, capacity: number) => {
+    // 1. Check current registrations
+    const currentCount = await prisma.eventRegistration.count({
+        where: { eventId: id }
     });
 
-    if (!event) {
-        event = await prisma.event.create({
-            data: {
-                name: 'Takeoff by Open Source Nest',
-                targetCapacity: 500,
-                location: 'TBD',
-                date: new Date(),
-            }
-        });
-        console.log("Initialized default event config");
+    // 2. Validate new capacity
+    if (capacity < currentCount) {
+        throw new AppError(`Cannot reduce capacity to ${capacity}. There are already ${currentCount} registered attendees.`, 400);
     }
 
-    return event;
-};
-
-export const updateEventConfig = async (id: string, capacity: number) => {
     return await prisma.event.update({
         where: { id },
         data: { targetCapacity: capacity }

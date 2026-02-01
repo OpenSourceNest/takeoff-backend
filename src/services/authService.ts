@@ -123,7 +123,7 @@ export const changePassword = async (userId: string, oldPassword: string, newPas
 export const verifyToken = (token: string) => {
     try {
         return jwt.verify(token, JWT_SECRET) as { userId: string; email: string; role: string };
-    } catch (error) {
+    } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
         throw new AppError("Invalid or expired token", 401);
     }
 };

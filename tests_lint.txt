@@ -1,0 +1,12 @@
+﻿
+C:\Users\HomePC\Desktop\Takeoff\takeoff-backend\src\tests\checkin.test.ts
+  18:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  18:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  18:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  37:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  54:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  75:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+Γ£û 7 problems (7 errors, 0 warnings)
+

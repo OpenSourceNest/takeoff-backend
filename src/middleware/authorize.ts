@@ -18,6 +18,7 @@ export const authorize = (allowedRoles: string[]) => (req: Request, res: Respons
         const secret = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production";
 
         const decoded = jwt.verify(token, secret) as JwtPayload;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         req.user = decoded as any;
 
         if (!allowedRoles.includes(decoded.role)) {

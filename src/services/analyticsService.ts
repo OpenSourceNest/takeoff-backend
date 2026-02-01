@@ -88,7 +88,7 @@ export const getRegistrationVelocity = async (days = 30) => {
  * Track a page visit
  */
 export const trackPageVisit = async (page: string, sessionId: string, ipAddress?: string, userAgent?: string, referrer?: string) => {
-    return await prisma.pageVisit.create({
+    const visit = await prisma.pageVisit.create({
         data: {
             page,
             sessionId,
@@ -97,6 +97,12 @@ export const trackPageVisit = async (page: string, sessionId: string, ipAddress?
             referrer
         }
     });
+
+    // Emit event to dashboard
+    const { io } = await import("../../app.js");
+    io.emit("dashboard:update", { type: "page_visit", data: visit });
+
+    return visit;
 };
 
 /**

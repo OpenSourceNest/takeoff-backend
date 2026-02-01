@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
 }
 
@@ -11,7 +11,6 @@ model EventRegistration {
   id                  String             @id @default(cuid())
   firstName           String
   lastName            String
-  gender              Gender
   email               String             @unique
   isCommunityMember   Boolean
   location            String
@@ -20,15 +19,16 @@ model EventRegistration {
   profession          Profession[]       @default([OTHER])
   professionOther     String?
   referralSource      ReferralSource     @default(OTHER)
-  referralSourceOther String?
   newsletterSub       Boolean            @default(false)
   pipelineInterest    PipelineInterest   @default(NOT_SURE)
   interests           String?
   communityDetails    String?
-  eventId             String?
-  checkedIn           Boolean            @default(false)
-  checkInTime         DateTime?
   createdAt           DateTime           @default(now())
+  gender              Gender
+  referralSourceOther String?
+  eventId             String?
+  checkInTime         DateTime?
+  checkedIn           Boolean            @default(false)
   status              RegistrationStatus @default(PENDING)
   event               Event?             @relation(fields: [eventId], references: [id])
 
@@ -62,11 +62,11 @@ model Event {
 
 model PageVisit {
   id        String   @id @default(cuid())
-  page      String   // e.g., "register"
-  sessionId String   // Track unique sessions
-  ipAddress String?  // Optional IP tracking
-  userAgent String?  // Browser info
-  referrer  String?  // Where they came from
+  page      String
+  sessionId String
+  ipAddress String?
+  userAgent String?
+  referrer  String?
   createdAt DateTime @default(now())
 
   @@index([page])
@@ -74,7 +74,6 @@ model PageVisit {
   @@index([createdAt])
   @@map("page_visits")
 }
-
 
 enum Profession {
   STUDENT
@@ -127,6 +126,8 @@ enum PipelineInterest {
 enum Gender {
   MALE
   FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
 }
 
 enum Role {

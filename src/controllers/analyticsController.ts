@@ -49,6 +49,7 @@ export const getDemographics = asyncHandler(async (req: Request, res: Response) 
  */
 export const trackVisit = asyncHandler(async (req: Request, res: Response) => {
     const { page, sessionId, ipAddress, userAgent, referrer } = req.body;
+    console.log(`[Backend Analytics] Received track-visit:`, { page, sessionId, ipAddress, userAgent, referrer });
 
     if (!page || !sessionId) {
         return res.status(400).json({

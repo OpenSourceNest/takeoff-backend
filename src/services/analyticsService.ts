@@ -34,8 +34,8 @@ export const getRegistrationStats = async () => {
     return {
         totalRegistrations,
         targetCapacity: totalCapacity,
-        percentageFilled: Math.round((totalRegistrations / totalCapacity) * 100),
-        recentRegistrations, // Growth in last 24h
+        percentageFilled: totalCapacity > 0 ? (totalRegistrations / totalCapacity) * 100 : 0,
+        recentRegistrations,
         remainingSpots: Math.max(0, totalCapacity - totalRegistrations),
         ...conversionStats
     };
@@ -128,7 +128,7 @@ export const getConversionRate = async () => {
 
     // Calculate conversion rate
     const conversionRate = uniqueVisits > 0
-        ? Number(((totalRegistrations / uniqueVisits) * 100).toFixed(2))
+        ? (totalRegistrations / uniqueVisits) * 100
         : 0;
 
     return {

@@ -15,6 +15,8 @@ export const createEventRegistration = asyncHandler(
       req.body as unknown,
     );
 
+    console.log({ validatedData });
+
     // Create registration with validated data
     const registration = await eventService.createRegistration(validatedData);
 
@@ -127,10 +129,15 @@ export const updateEventConfig = asyncHandler(
     const { eventId, targetCapacity } = req.body;
 
     if (!eventId || !targetCapacity) {
-      return next(new AppError("Event ID and Target Capacity are required.", 400));
+      return next(
+        new AppError("Event ID and Target Capacity are required.", 400),
+      );
     }
 
-    const updated = await eventService.updateEventConfig(eventId, Number(targetCapacity));
+    const updated = await eventService.updateEventConfig(
+      eventId,
+      Number(targetCapacity),
+    );
 
     res.json({
       success: true,
@@ -172,7 +179,9 @@ export const getEventRegistrationQR = asyncHandler(
     const qrCode = await eventService.generateQRCode(id);
 
     if (!qrCode) {
-      return next(new AppError("Registration not found or QR generation failed.", 404));
+      return next(
+        new AppError("Registration not found or QR generation failed.", 404),
+      );
     }
 
     res.json({
@@ -181,5 +190,3 @@ export const getEventRegistrationQR = asyncHandler(
     });
   },
 );
-
-

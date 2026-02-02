@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
 }
 
@@ -8,29 +8,28 @@ datasource db {
 }
 
 model EventRegistration {
-  id                  String             @id @default(cuid())
+  id                  String           @id @default(cuid())
   firstName           String
   lastName            String
-  gender              Gender
-  email               String             @unique
+  email               String           @unique
   isCommunityMember   Boolean
   location            String
   locationOther       String?
-  openSourceKnowledge Int                @db.SmallInt
-  profession          Profession[]       @default([OTHER])
+  openSourceKnowledge Int              @db.SmallInt
+  profession          Profession[]     @default([OTHER])
   professionOther     String?
-  referralSource      ReferralSource     @default(OTHER)
-  referralSourceOther String?
-  newsletterSub       Boolean            @default(false)
-  pipelineInterest    PipelineInterest   @default(NOT_SURE)
+  referralSource      ReferralSource   @default(OTHER)
+  newsletterSub       Boolean          @default(false)
+  pipelineInterest    PipelineInterest @default(NOT_SURE)
   interests           String?
   communityDetails    String?
+  createdAt           DateTime         @default(now())
+  gender              Gender
+  referralSourceOther String?
   eventId             String?
-  checkedIn           Boolean            @default(false)
   checkInTime         DateTime?
-  createdAt           DateTime           @default(now())
-  status              RegistrationStatus @default(PENDING)
-  event               Event?             @relation(fields: [eventId], references: [id])
+  checkedIn           Boolean          @default(false)
+  event               Event?           @relation(fields: [eventId], references: [id])
 
   @@map("event_registrations")
 }
@@ -62,11 +61,11 @@ model Event {
 
 model PageVisit {
   id        String   @id @default(cuid())
-  page      String   // e.g., "register"
-  sessionId String   // Track unique sessions
-  ipAddress String?  // Optional IP tracking
-  userAgent String?  // Browser info
-  referrer  String?  // Where they came from
+  page      String
+  sessionId String
+  ipAddress String?
+  userAgent String?
+  referrer  String?
   createdAt DateTime @default(now())
 
   @@index([page])
@@ -74,7 +73,6 @@ model PageVisit {
   @@index([createdAt])
   @@map("page_visits")
 }
-
 
 enum Profession {
   STUDENT
@@ -132,10 +130,4 @@ enum Gender {
 enum Role {
   USER
   ADMIN
-}
-
-enum RegistrationStatus {
-  PENDING
-  APPROVED
-  REJECTED
 }

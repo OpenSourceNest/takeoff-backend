@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { prisma } from "../lib/prisma.js";
+import { AppError } from "../utils/AppError.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production";
 const JWT_EXPIRES_IN = "7d";
@@ -15,7 +16,7 @@ export const register = async (email: string, password: string) => {
     });
 
     if (existingUser) {
-        throw new Error("User with this email already exists");
+        throw new AppError("User with this email already exists", 400);
     }
 
     // Hash password
@@ -52,27 +53,16 @@ export const login = async (email: string, password: string) => {
     });
 
     if (!user) {
-        throw new Error("Invalid credentials");
+        throw new AppError("Invalid credentials", 401);
     }
 
-    // Note: We removed the admin check here to allow regular users to login, 
-    // but the frontend (admin dashboard) will protect its routes based on role.
-    // If you want to RESTRICT login to admins only, keep the check.
-    // For now, I'll keep the check but commented out as requested "signup help me access admin page" 
-    // implying they want to login first, then be promoted.
-    // Actually, if they login as USER and try to access /admin routes, the middleware/frontend should block them.
-    // The user said: "if updated to admin. when the user login. he will be directed to the admin page"
-    // This implies they CAN login.
-
-    if (user.role !== "ADMIN") {
-        throw new Error("Access denied. Admin privileges required.");
-    }
+    console.log(`[AuthService] Login attempt for user: ${email}, Role: ${user.role}`);
 
     // Verify password
     const isPasswordValid = await comparePassword(password, user.password);
 
     if (!isPasswordValid) {
-        throw new Error("Invalid credentials");
+        throw new AppError("Invalid credentials", 401);
     }
 
     // Generate JWT token
@@ -105,14 +95,14 @@ export const changePassword = async (userId: string, oldPassword: string, newPas
     });
 
     if (!user) {
-        throw new Error("User not found");
+        throw new AppError("User not found", 404);
     }
 
     // Verify old password
     const isPasswordValid = await comparePassword(oldPassword, user.password);
 
     if (!isPasswordValid) {
-        throw new Error("Invalid current password");
+        throw new AppError("Invalid current password", 400);
     }
 
     // Hash new password
@@ -133,8 +123,8 @@ export const changePassword = async (userId: string, oldPassword: string, newPas
 export const verifyToken = (token: string) => {
     try {
         return jwt.verify(token, JWT_SECRET) as { userId: string; email: string; role: string };
-    } catch (error) {
-        throw new Error("Invalid or expired token");
+    } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
+        throw new AppError("Invalid or expired token", 401);
     }
 };
 
@@ -168,7 +158,7 @@ export const getUserById = async (userId: string) => {
     });
 
     if (!user) {
-        throw new Error("User not found");
+        throw new AppError("User not found", 404);
     }
 
     return user;

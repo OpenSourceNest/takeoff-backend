@@ -77,32 +77,23 @@ export const logout = asyncHandler(async (_req: Request, res: Response) => {
 /**
  * CHANGE PASSWORD - POST /api/auth/change-password
  */
-export const changePassword = asyncHandler(async (req: any, res: Response) => {
+export const changePassword = asyncHandler(async (req: Request, res: Response) => {
     const { oldPassword, newPassword } = req.body;
 
     // Check if user exists on request (from middleware)
     if (!req.user || !req.user.userId) {
-        return res.status(401).json({
-            success: false,
-            message: "Not authenticated"
-        });
+        throw new AppError("Not authenticated", 401);
     }
 
     const userId = req.user.userId;
 
     if (!oldPassword || !newPassword) {
-        return res.status(400).json({
-            success: false,
-            message: "Current and new password are required"
-        });
+        throw new AppError("Current and new password are required", 400);
     }
 
     // Basic validation for new password
     if (newPassword.length < 8) {
-        return res.status(400).json({
-            success: false,
-            message: "New password must be at least 8 characters"
-        });
+        throw new AppError("New password must be at least 8 characters", 400);
     }
 
     await authService.changePassword(userId, oldPassword, newPassword);

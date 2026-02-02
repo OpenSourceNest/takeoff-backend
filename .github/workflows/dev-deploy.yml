@@ -1,8 +1,8 @@
-name: Build and Deploy (PROD)
+name: Build and Deploy (DEV)
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "dev" ]
 
 env:
   REGISTRY: ghcr.io
@@ -46,7 +46,7 @@ jobs:
           timeout: 60s          # Increase connection timeout
           command_timeout: 10m  # Increase command execution timeout
           script: |
-            cd ${{ secrets.PROD_DEPLOY_PATH }}
+            cd ${{ secrets.DEV_DEPLOY_PATH }}
             # Log in to GHCR on the VPS so it can pull your private image
             echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker compose pull

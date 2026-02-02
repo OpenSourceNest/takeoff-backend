@@ -1,0 +1,9 @@
+﻿
+C:\Users\HomePC\Desktop\Takeoff\takeoff-backend\src\middleware\auth.middleware.ts
+  10:5  error  ES2015 module syntax is preferred over namespaces  @typescript-eslint/no-namespace
+
+C:\Users\HomePC\Desktop\Takeoff\takeoff-backend\src\middleware\errorHandler.ts
+  9:3  error  '_next' is defined but never used  @typescript-eslint/no-unused-vars
+
+Γ£û 2 problems (2 errors, 0 warnings)
+

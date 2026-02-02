@@ -34,8 +34,8 @@ export const getRegistrationStats = async () => {
     return {
         totalRegistrations,
         targetCapacity: totalCapacity,
-        percentageFilled: Math.round((totalRegistrations / totalCapacity) * 100),
-        recentRegistrations, // Growth in last 24h
+        percentageFilled: totalCapacity > 0 ? (totalRegistrations / totalCapacity) * 100 : 0,
+        recentRegistrations,
         remainingSpots: Math.max(0, totalCapacity - totalRegistrations),
         ...conversionStats
     };
@@ -88,7 +88,7 @@ export const getRegistrationVelocity = async (days = 30) => {
  * Track a page visit
  */
 export const trackPageVisit = async (page: string, sessionId: string, ipAddress?: string, userAgent?: string, referrer?: string) => {
-    return await prisma.pageVisit.create({
+    const visit = await prisma.pageVisit.create({
         data: {
             page,
             sessionId,
@@ -97,6 +97,12 @@ export const trackPageVisit = async (page: string, sessionId: string, ipAddress?
             referrer
         }
     });
+
+    // Emit event to dashboard
+    const { io } = await import("../../app.js");
+    io.emit("dashboard:update", { type: "page_visit", data: visit });
+
+    return visit;
 };
 
 /**
@@ -128,7 +134,7 @@ export const getConversionRate = async () => {
 
     // Calculate conversion rate
     const conversionRate = uniqueVisits > 0
-        ? Number(((totalRegistrations / uniqueVisits) * 100).toFixed(2))
+        ? (totalRegistrations / uniqueVisits) * 100
         : 0;
 
     return {
@@ -150,7 +156,6 @@ export const getDemographicsBreakdown = async () => {
             gender: true,
             location: true,
             referralSource: true,
-            status: true,
             checkedIn: true,
             openSourceKnowledge: true
         }
@@ -198,13 +203,7 @@ export const getDemographicsBreakdown = async () => {
         }
     });
 
-    // Status stats
-    const statusStats = await prisma.eventRegistration.groupBy({
-        by: ['status'],
-        _count: {
-            _all: true
-        }
-    });
+
 
     // Check-in stats
     const checkinStats = await prisma.eventRegistration.groupBy({
@@ -252,10 +251,7 @@ export const getDemographicsBreakdown = async () => {
             name: stat.referralSource,
             value: stat._count._all
         })),
-        statuses: statusStats.map(stat => ({
-            name: stat.status,
-            value: stat._count._all
-        })),
+
         checkins: checkinStats.map(stat => ({
             name: stat.checkedIn ? 'Checked In' : 'Not Checked In',
             value: stat._count._all
@@ -299,6 +295,14 @@ export const getFilteredRegistrations = async (filters: {
         where.newsletterSub = filters.newsletterSub;
     }
 
+    // Determine sort order
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let orderBy: any = { firstName: 'asc' }; // Default to alphabetical
+
+    if (filters.checkedIn) {
+        orderBy = { checkInTime: 'asc' }; // Reward early birds
+    }
+
     // Get filtered registrations
     const registrations = await prisma.eventRegistration.findMany({
         where,
@@ -314,9 +318,7 @@ export const getFilteredRegistrations = async (filters: {
             createdAt: true,
             checkInTime: true
         },
-        orderBy: {
-            createdAt: 'desc'
-        }
+        orderBy
     });
 
     // Get category breakdowns

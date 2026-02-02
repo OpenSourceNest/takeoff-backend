@@ -21,7 +21,19 @@ export const initMessenger = async () => {
     },
   });
 
-  console.log(" [✓] RabbitMQ Connection Initialized");
+  connection.on("connect", () => {
+    console.log("✅ RabbitMQ Connected successfully!");
+  });
+
+  connection.on("disconnect", (params: { err: Error }) => {
+    console.log("❌ RabbitMQ Disconnected: ", params.err.message);
+    process.exit(1);
+  });
+
+  connection.on("connectFailed", (err: Error) => {
+    console.error("❌ RabbitMQ Connection error: ", err);
+    process.exit(1);
+  });
 };
 
 export const getEmailTaskType = () => EmailTaskType;

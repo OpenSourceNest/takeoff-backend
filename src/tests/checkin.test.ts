@@ -15,6 +15,7 @@ vi.mock("../lib/prisma", () => ({
 
 // Mock Authorize Middleware
 vi.mock("../middleware/authorize", () => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     authorize: () => (req: any, res: any, next: any) => next(),
 }));
 
@@ -33,7 +34,9 @@ describe("Check-in and QR Routes", () => {
                 checkedIn: false
             };
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (prisma.eventRegistration.findUnique as any).mockResolvedValue(mockRegistration);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (prisma.eventRegistration.update as any).mockResolvedValue({
                 ...mockRegistration,
                 checkedIn: true,
@@ -51,6 +54,7 @@ describe("Check-in and QR Routes", () => {
         });
 
         it("should return 404 if registration not found", async () => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (prisma.eventRegistration.findUnique as any).mockResolvedValue(null);
 
             const response = await request(app)
@@ -72,6 +76,7 @@ describe("Check-in and QR Routes", () => {
                 event: { name: "Test Event" }
             };
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (prisma.eventRegistration.findUnique as any).mockResolvedValue(mockRegistration);
 
             const response = await request(app)

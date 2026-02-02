@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import * as analyticsService from "../services/analyticsService.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { AppError } from "../utils/AppError.js";
 
 /**
  * GET - /api/events/analytics/overview
@@ -49,12 +50,10 @@ export const getDemographics = asyncHandler(async (req: Request, res: Response) 
  */
 export const trackVisit = asyncHandler(async (req: Request, res: Response) => {
     const { page, sessionId, ipAddress, userAgent, referrer } = req.body;
+    console.log(`[Backend Analytics] Received track-visit:`, { page, sessionId, ipAddress, userAgent, referrer });
 
     if (!page || !sessionId) {
-        return res.status(400).json({
-            success: false,
-            message: 'Page and sessionId are required'
-        });
+        throw new AppError('Page and sessionId are required', 400);
     }
 
     // Get IP and User Agent from headers if not provided in body

@@ -6,6 +6,7 @@ export const globalErrorHandler = (
   err: any,
   req: Request,
   res: Response,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   next: NextFunction,
 ) => {
   err.statusCode = err.statusCode || 500;
@@ -64,9 +65,9 @@ export const globalErrorHandler = (
   // Handle AppError (Operational)
   if (err.isOperational) {
     return res.status(err.statusCode).json({
-      success: false, // Maintain backward compatibility with current success: false format if desired, or switch to status: fail
+      success: false,
       status: err.status,
-      error: err.message,
+      message: err.message,
     });
   }
 
@@ -75,7 +76,7 @@ export const globalErrorHandler = (
   res.status(500).json({
     success: false,
     status: "error",
-    error:
+    message:
       process.env.NODE_ENV === "development"
         ? err.message
         : "Something went wrong!",

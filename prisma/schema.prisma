@@ -8,28 +8,28 @@ datasource db {
 }
 
 model EventRegistration {
-  id                  String             @id @default(cuid())
+  id                  String           @id @default(cuid())
   firstName           String
   lastName            String
-  email               String             @unique
+  email               String           @unique
   isCommunityMember   Boolean
   location            String
   locationOther       String?
-  openSourceKnowledge Int                @db.SmallInt
-  profession          Profession[]       @default([OTHER])
+  openSourceKnowledge Int              @db.SmallInt
+  profession          Profession[]     @default([OTHER])
   professionOther     String?
-  referralSource      ReferralSource     @default(OTHER)
-  newsletterSub       Boolean            @default(false)
-  pipelineInterest    PipelineInterest   @default(NOT_SURE)
+  referralSource      ReferralSource   @default(OTHER)
+  newsletterSub       Boolean          @default(false)
+  pipelineInterest    PipelineInterest @default(NOT_SURE)
   interests           String?
   communityDetails    String?
-  createdAt           DateTime           @default(now())
+  createdAt           DateTime         @default(now())
   gender              Gender
   referralSourceOther String?
   eventId             String?
   checkInTime         DateTime?
-  checkedIn           Boolean            @default(false)
-  event               Event?             @relation(fields: [eventId], references: [id])
+  checkedIn           Boolean          @default(false)
+  event               Event?           @relation(fields: [eventId], references: [id])
 
   @@map("event_registrations")
 }
@@ -125,12 +125,9 @@ enum PipelineInterest {
 enum Gender {
   MALE
   FEMALE
-  OTHER
-  PREFER_NOT_TO_SAY
 }
 
 enum Role {
   USER
   ADMIN
 }
-

@@ -6,6 +6,9 @@ let channelWrapper: ChannelWrapper;
 let EmailTaskType: protobuf.Type;
 
 export const REGISTRATION_QUEUE_NAME = "email_queue";
+const DLX_EXCHANGE_NAME = "email_dlx";
+const DLX_ROUTING_KEY = "email_failed_key";
+const QUARANTINE_QUEUE_NAME = "email_failed_queue";
 
 export const initMessenger = async () => {
   const PROTO_PATH = path.join(__dirname, "../proto/email.proto");
@@ -16,8 +19,26 @@ export const initMessenger = async () => {
   const connection = amqp.connect([rabbitURL]);
 
   channelWrapper = connection.createChannel({
-    setup: (channel: Channel) => {
-      return channel.assertQueue(REGISTRATION_QUEUE_NAME, { durable: true });
+    setup: async (channel: Channel) => {
+      await channel.assertExchange(DLX_EXCHANGE_NAME, "direct", {
+        durable: true,
+      });
+
+      await channel.assertQueue(QUARANTINE_QUEUE_NAME, { durable: true });
+
+      await channel.bindQueue(
+        QUARANTINE_QUEUE_NAME,
+        DLX_EXCHANGE_NAME,
+        DLX_ROUTING_KEY,
+      );
+
+      return channel.assertQueue(REGISTRATION_QUEUE_NAME, {
+        durable: true,
+        arguments: {
+          "x-dead-letter-exchange": DLX_EXCHANGE_NAME,
+          "x-dead-letter-routing-key": DLX_ROUTING_KEY,
+        },
+      });
     },
   });
 

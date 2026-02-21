@@ -4,3 +4,6 @@ node_modules
 
 /generated/prisma
 dist
+tests_lint.txt
+lint_out.txt
+lint_report.txt 
